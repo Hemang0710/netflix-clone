@@ -1,23 +1,36 @@
+
 import { NextResponse } from "next/server";
-import {movies} from "@/lib/data";
+import prisma from "@/lib/prisma";
 
-export async function GET (request,{params}){
-    const{id} = await params 
-    const movieId= Number(id)   //<- this captures /api/movies/42 -> id = "42"
+export async function GET(request,{params}) {
+    try{
+        const {id} = await params
+        const movieId = Number(id)
 
-    // Find the movie
-    const movie =  movies.find((m)=>m.id === movieId);
+        if(isNaN(movieId)){
+            return NextResponse.json(
+                {success: flase, message: "Invalid movie Id"},
+                {status :400}
+            )
+        }
+        const movie = await prisma.movie.findUnique({
+            where: {id:movieId},
+        })
 
-    if(!movie){
+        if(!movie){
+            return NextResponse.json (
+                {success :flase,message:"Movie not found"},
+                {status: 404}
+            )
+        }
+
+        return NextResponse.json({success:true, data:movie})
+    } catch (error){
+        console.error ("Movie fetch error:", error)
         return NextResponse.json(
-            {success:false, message:"Movie not found"},
-            {status:404}
-        );
+            {success :false, message:"Failed to fetch movie"},
+            {status:500}
+        )
     }
-    return NextResponse.json({
-        success: true,
-        data:movie,
-    });
+    
 }
-
-

@@ -2,11 +2,27 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function Navbar (){
     const router = useRouter()
     const [loggingOut, setLoggingOut] = useState(false)
+    const [userEmail, setUserEmail] = useState("")
+
+    useEffect(() => {
+        async function fetchUser() {
+            try{
+                const res = await fetch("/api/auth/me")
+                if(res.ok){
+                    const data = await res.json()
+                    setUserEmail(data.email)
+                }
+            } catch(error){
+                console.error("Failed to fetch user:", error)
+            }
+        }
+        fetchUser()
+    },[])
 
     async function handleLogout (){
         setLoggingOut(true)
@@ -15,6 +31,8 @@ export default function Navbar (){
         router.refresh()
     }
 
+    //Get initials from email
+    const initial = userEmail ? userEmail[0].toUpperCase() : "U"
     return (
         <nav className="fixed top-0 w-full z-50 flex items-center justify-between px-12 py-4 bg-linear-to-b from-black/80 to-transparent">
             {/*Logo */}
@@ -33,8 +51,10 @@ export default function Navbar (){
 
             {/* Right side */}
             <div className="flex items-center gap-4">
-                <div className="w-8 h-8 rounded bg-red-600 flex items-center justify-center text-white text-sm font-bold">
-                    U
+                <div className="w-8 h-8 rounded bg-red-600 flex items-center justify-center text-white text-sm font-bold"
+                title={userEmail}
+                >
+                    {initial}
                 </div>
                 <button
                     onClick={handleLogout}

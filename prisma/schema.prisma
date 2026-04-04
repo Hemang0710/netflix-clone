@@ -1,5 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -24,23 +24,25 @@ model Profile {
 }
 
 model Movie {
-  id           Int         @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   title        String
   description  String
   genre        String
   year         Int
   rating       Float
   thumbnailUrl String?
-  watchlist    Watchlist[]
 }
 
 model Watchlist {
-  id        Int      @id @default(autoincrement())
-  addedAt   DateTime @default(now())
-  profileId Int
-  profile   Profile  @relation(fields: [profileId], references: [id])
-  movieId   Int
-  movie     Movie    @relation(fields: [movieId], references: [id])
+  id      Int      @id @default(autoincrement())
+  addedAt DateTime @default(now())
 
-  @@unique([profileId, movieId])
+  tmdbId     Int
+  title      String
+  posterPath String
+
+  profileId Int
+  profile   Profile @relation(fields: [profileId], references: [id])
+
+  @@unique([profileId, tmdbId])
 }

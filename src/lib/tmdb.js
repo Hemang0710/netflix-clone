@@ -17,7 +17,7 @@ export async function getTrending(){
 }
 
 //Get movies by genre
-export async function getMovieByGenre(genreId) {
+export async function getMoviesByGenre(genreId) {
     const res = await fetch(
         `${BASE_URL}/discover/movie?with_genres=${genreId}&sort_by=popularity.desc`,
         options

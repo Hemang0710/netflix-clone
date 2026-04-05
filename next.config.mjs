@@ -11,6 +11,7 @@ const nextConfig = {
       },
     ],
   },
+  serverExternalPackages:["@prisma/client", "bcryptjs", "jsonwebtoken"],
 };
 
 export default nextConfig;

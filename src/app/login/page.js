@@ -1,14 +1,15 @@
-// src/app/login/page.js
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 
-export default function LoginPage() {
+export const dynamic = "force-dynamic"
+
+function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const googleError = searchParams.get("error")
+  const googleError = searchParams?.get("error")
 
   const [formData, setFormData] = useState({ email: "", password: "" })
   const [error, setError] = useState("")
@@ -138,3 +139,12 @@ export default function LoginPage() {
     </div>
   )
 }
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="bg-black min-h-screen" />}>
+      <LoginForm />
+    </Suspense>
+  )
+}
+

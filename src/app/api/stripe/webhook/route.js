@@ -3,7 +3,7 @@ import stripe from "@/lib/stripe";
 import prisma from "@/lib/prisma";
 
 //Must disable body parsing - Stripe needs raw body for signature verification
-export const config = {api:{bodyParser: false}}
+// export const config = {api:{bodyParser: false}}
 
 export async function POST(request) {
     const body = await request.text()

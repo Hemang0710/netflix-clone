@@ -11,7 +11,8 @@ function WatchlistCard({ movie }) {
     : null
 
   return (
-    <div className="relative shrink-0 w-36 h-52 rounded-md overflow-hidden cursor-pointer group">
+    <div className="relative 
+    shrink-0 w-36 h-52 rounded-md overflow-hidden cursor-pointer group">
       {posterUrl ? (
         <Image
           src={posterUrl}

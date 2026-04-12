@@ -4,45 +4,84 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // url = env("DATABASE_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
+
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
-  profiles  Profile[]
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String?
+  role         String        @default("viewer")
+  createdAt    DateTime      @default(now())
+  profile      Profile?
+  content      Content[]
+  purchases    Purchase[]
+  subscription Subscription?
+  watchlist    Watchlist[]
 }
 
 model Profile {
-  id        Int         @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique
+  user      User    @relation(fields: [userId], references: [id])
   name      String
   avatarUrl String?
-  userId    Int
-  user      User        @relation(fields: [userId], references: [id])
-  watchlist Watchlist[]
+  bio       String?
 }
 
-model Movie {
-  id           Int     @id @default(autoincrement())
+model Content {
+  id           Int        @id @default(autoincrement())
   title        String
   description  String
-  genre        String
-  year         Int
-  rating       Float
+  videoUrl     String
   thumbnailUrl String?
+  duration     Int?
+  price        Float      @default(0)
+  isFree       Boolean    @default(true)
+  status       String     @default("processing")
+  aiSummary    String?
+  transcript   String?
+  genre        String     @default("General")
+  creatorId    Int
+  creator      User       @relation(fields: [creatorId], references: [id])
+  purchases    Purchase[]
+  views        Int        @default(0)
+  createdAt    DateTime   @default(now())
+}
+
+model Subscription {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  stripeCustomerId String?
+  stripeSubId    String?  @unique
+  plan           String
+  status         String   @default("active")
+  periodEnd      DateTime
+  createdAt      DateTime @default(now())
+}
+
+model Purchase {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  amount    Float
+  user      User     @relation(fields: [userId], references: [id])
+  content   Content  @relation(fields: [contentId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, contentId])
 }
 
 model Watchlist {
-  id      Int      @id @default(autoincrement())
-  addedAt DateTime @default(now())
-
-  tmdbId     Int
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  tmdbId     Int?
+  contentId  Int?
   title      String
-  posterPath String
-
-  profileId Int
-  profile   Profile @relation(fields: [profileId], references: [id])
-
-  @@unique([profileId, tmdbId])
+  posterPath String?
+  user       User     @relation(fields: [userId], references: [id])
+  addedAt    DateTime @default(now())
 }

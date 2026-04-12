@@ -16,13 +16,13 @@ export async function GET() {
     }
 
     const watchlist = await prisma.watchlist.findMany({
-      where: { profile: { userId: Number(user.userId) } },
+      where: { userId: Number(user.userId) },
     })
 
     // Extract just the tmdbIds
     const tmdbIds = watchlist.map(item => item.tmdbId)
 
-    return NextResponse.json({ success: true, data: tmdbIds })
+    return NextResponse.json({ success: true, data: watchlist.map(item => item.tmdbId).filter(Boolean) })
 
   } catch (error) {
     console.error("Watchlist GET error:", error)
@@ -46,23 +46,10 @@ export async function POST(request) {
 
     const { tmdbId, title, posterPath } = await request.json()
 
-    // Find or create profile for this user
-    let profile = await prisma.profile.findFirst({
-      where: { userId: Number(user.userId) },
-    })
-
-    if (!profile) {
-      profile = await prisma.profile.create({
-        data: { userId: Number(user.userId), name: user.email },
-      })
-    }
-
     // Add to watchlist (ignore if already exists)
     await prisma.watchlist.create({
       data: {
-        profile:{
-            connect: {id: profile.id},
-        },
+        userId: Number(user.userId),
         tmdbId: Number(tmdbId),
         title,
         posterPath: posterPath || "",
@@ -103,24 +90,23 @@ export async function DELETE(request) {
 
     const { tmdbId } = await request.json()
 
-    const profile = await prisma.profile.findFirst({
-      where: { userId: Number(user.userId) },
+    // Find and delete the watchlist entry
+    const watchlistEntry = await prisma.watchlist.findFirst({
+      where: {
+        userId: Number(user.userId),
+        tmdbId: Number(tmdbId),
+      },
     })
 
-    if (!profile) {
+    if (!watchlistEntry) {
       return NextResponse.json(
-        { success: false, message: "Profile not found" },
+        { success: false, message: "Not found in watchlist" },
         { status: 404 }
       )
     }
 
     await prisma.watchlist.delete({
-      where: {
-        profileId_tmdbId: {
-          profileId: profile.id,
-          tmdbId: Number(tmdbId),
-        },
-      },
+      where: { id: watchlistEntry.id },
     })
 
     return NextResponse.json({ success: true, message: "Removed from watchlist" })

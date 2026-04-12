@@ -7,7 +7,7 @@ export async function proxy(request) {
   const token = request.cookies.get("token")?.value
   const { pathname } = request.nextUrl
 
-  const isProtectedRoute = pathname.startsWith("/browse")
+  const isProtectedRoute = pathname.startsWith("/browse") || pathname.startsWith("/creator")
   const isAuthRoute = pathname === "/login" || pathname === "/register"
 
   if (isProtectedRoute && !token) {

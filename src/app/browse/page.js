@@ -8,24 +8,24 @@ import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 
 async function getWatchlistMovies(userId) {
-  const profile = await prisma.profile.findFirst({
-    where: { userId: Number(userId) },
-    include: { watchlist: true },
-  })
-
-  if (!profile) return []
-  return profile.watchlist
+  try{
+    return await prisma.watchlist.findMany({
+      where: {userId: Number(userId)},
+    })
+  } catch {
+    return []
+  }
 }
 
 export default async function BrowsePage() {
   const user = await getCurrentUser()
 
   const [trending, action, sciFi, drama, watchlistMovies] = await Promise.all([
-    getTrending(),
-    getMoviesByGenre(GENRES.ACTION),
-    getMoviesByGenre(GENRES.SCIFI),
-    getMoviesByGenre(GENRES.DRAMA),
-    user ? getWatchlistMovies(user.userId) : [],
+    getTrending().catch(() => []),
+    getMoviesByGenre(GENRES.ACTION).catch(() => []),
+    getMoviesByGenre(GENRES.SCIFI).catch(() => []),
+    getMoviesByGenre(GENRES.DRAMA).catch(() => []),
+    user ? getWatchlistMovies(user.userId) : Promise.resolve([]),
   ])
 
   return (

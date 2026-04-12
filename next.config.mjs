@@ -9,6 +9,12 @@ const nextConfig = {
         hostname: "image.tmdb.org",
         pathname: "/t/p/**",
       },
+      //This is for s3 bucket
+      {
+        protocol:"https",
+        hostname:"*.amazonaws.com",
+        pathname:"/**",
+      },
     ],
   },
   serverExternalPackages:["@prisma/client", "bcryptjs", "jsonwebtoken"],

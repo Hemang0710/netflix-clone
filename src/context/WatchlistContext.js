@@ -4,93 +4,93 @@ import { createContext, useContext, useState, useEffect } from "react"
 
 const WatchlistContext = createContext(null)
 
-export function WatchlistProvider ({children}) {
-    const [watchlist, setWatchlist] = useState([]) //array of tmdbIds
+export function WatchlistProvider({ children }) {
+  const [watchlist, setWatchlist] = useState([])
 
-    //Load watchlist when app starts
-    useEffect(()=> {
-        async function loadWatchlist(){
-            try {
-                const res = await fetch("/api/watchlist")
-                if(res.ok){
-                    const data = await res.json()
-                    setWatchlist(data.data || [])
-                }
-            } catch (error){
-                console.error("Failed to load watchlist:", error)
-            }
+  useEffect(() => {
+    async function loadWatchlist() {
+      try {
+        const res = await fetch("/api/watchlist")
+        if (res.ok) {
+          const data = await res.json()
+          // Force all IDs to numbers for consistent comparison
+          setWatchlist((data.data || []).map(Number))
         }
-        loadWatchlist()
-    },[])
-
-    async function addToWatchlist(movie) {
-        //OPTIMISTIC - update UI immediately
-    setWatchlist(prev => [...prev,movie.id])
-    
-    try{
-        const res = await fetch("/api/watchlist",{
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body:JSON.stringify({
-                tmdbId: movie.id,
-                title: movie.title,
-                posterPath: movie.poster_path,
-            }),
-        })
-        if(!res.ok) {
-            //REVERT if API failed
-            setWatchlist(prev => prev.filter(id => id !== movie.id))
-        }
-    } catch {
-        //REVERT on network error
-        setWatchlist(prev=> prev.filter(id => id !== movie.id))
+      } catch (error) {
+        console.error("Failed to load watchlist:", error)
+      }
     }
-    }
+    loadWatchlist()
+  }, [])
 
-    async function removeFromWatchlist(tmdbId) {
-        //OPTIMSTIC - remove immediately
+  async function addToWatchlist(movie) {
+    const tmdbId = Number(movie.id)
+
+    // Optimistic update
+    setWatchlist(prev => [...prev, tmdbId])
+
+    try {
+      const res = await fetch("/api/watchlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tmdbId,
+          title: movie.title,
+          posterPath: movie.poster_path || "",
+        }),
+      })
+
+      if (!res.ok) {
+        // Revert
         setWatchlist(prev => prev.filter(id => id !== tmdbId))
-
-        try{
-            const res = await fetch("/api/watchlist",{
-                method: "DELETE",
-                headers: {"content-Type": "application/json"},
-                body: JSON.stringify({tmdbId}),
-            })
-
-            if(!res.ok){
-                //REVERT if API failed
-                setWatchlist(prev => [...prev,tmdbId])
-            }
-        } catch {
-            //REVERT on network error
-            setWatchlist(prev => [...prev,tmdbId])
-        }
+      }
+    } catch {
+      setWatchlist(prev => prev.filter(id => id !== tmdbId))
     }
+  }
 
-    function isInWatchlist(tmdbId){
-        return watchlist.includes(tmdbId)
+  async function removeFromWatchlist(tmdbId) {
+    const id = Number(tmdbId)
+
+    // Optimistic update
+    setWatchlist(prev => prev.filter(existingId => existingId !== id))
+
+    try {
+      const res = await fetch("/api/watchlist", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tmdbId: id }),
+      })
+
+      if (!res.ok) {
+        // Revert — reload from server
+        const data = await fetch("/api/watchlist").then(r => r.json())
+        setWatchlist((data.data || []).map(Number))
+      }
+    } catch {
+      const data = await fetch("/api/watchlist").then(r => r.json())
+      setWatchlist((data.data || []).map(Number))
     }
+  }
 
-    return(
-        <WatchlistContext.Provider value={{
-            watchlist,
-            addToWatchlist,
-            removeFromWatchlist,
-            isInWatchlist,
-        }}>
-            {children}
-        </WatchlistContext.Provider>
-    )
+  function isInWatchlist(tmdbId) {
+    return watchlist.includes(Number(tmdbId))
+  }
+
+  return (
+    <WatchlistContext.Provider value={{
+      watchlist,
+      addToWatchlist,
+      removeFromWatchlist,
+      isInWatchlist,
+    }}>
+      {children}
+    </WatchlistContext.Provider>
+  )
 }
 
-//Custom hook - clean way to use this context
-
 export function useWatchlist() {
-    const context = useContext(WatchlistContext)
-    if (!context){
-        throw new Error("useWatchlist must be used inside WatchlistProvider")
-    }
-
-    return context
+  const context = useContext(WatchlistContext)
+  if (!context) throw new Error("useWatchlist must be inside WatchlistProvider")
+  return context
 }

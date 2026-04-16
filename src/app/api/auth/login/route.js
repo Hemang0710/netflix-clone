@@ -2,8 +2,21 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import prisma from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rateLimit";
 
 export async function POST (request){
+    //Rate limit check FIRST - before any DB queries
+    const {success} = await checkRateLimit(request,"auth")
+
+    if(!success){
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Too many login attempts. Please try again in 15 minutes.",
+            },
+            {status: 429}
+        )
+    }
     try {
         const body = await request.json()
         const {email,password} = body 
@@ -22,7 +35,7 @@ export async function POST (request){
         })
 
         //User not found - same message as wrong password (security reason!)
-        if(!user){
+        if(!user || !user.password){
             return NextResponse.json (
                 {success :false, message: "Invalid email or password"},
                 {status: 401}

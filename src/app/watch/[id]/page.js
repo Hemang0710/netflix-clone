@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import {notFound} from "next/navigation"
+import AIChatSidebar from "@/components/AIChatSidebar";
+import WatchPageClient  from "@/components/WatchPageClient"
+
 
 export default async function WatchPage({params}) {
     const {id} = await params
@@ -26,10 +29,16 @@ export default async function WatchPage({params}) {
         data: {views: {increment:1}},
     })
 
+    const chapters = content.chapters ? JSON.parse(content.chapters) : []
     const creatorName = content.creator.profile?.name || content.creator.email
 
     return (
-        <main className="min-h-screen bg-zinc-900 text-white">
+        <main className="min-h-screen bg-zinc-950 text-white">
+            <WatchPageClient
+                content = {content}
+                chapters = {chapters}
+                creatorName = {creatorName}
+            />
             <div className="max-w-6xl mx-auto px-6 py-8">
 
                 {/* Video Player */}
@@ -119,8 +128,13 @@ export default async function WatchPage({params}) {
                     </div>
                 </div>
             </div>
-
+         
+    
+        <AIChatSidebar
+        contentId={content.id}
+        hasTranscript={!!content.transcript}
+        />
             </div>
-        </main>
+    </main>
     )
 }

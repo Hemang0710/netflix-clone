@@ -9,6 +9,7 @@ datasource db {
 }
 
 
+
 model User {
   id           Int           @id @default(autoincrement())
   email        String        @unique
@@ -43,6 +44,7 @@ model Content {
   status       String     @default("processing")
   aiSummary    String?
   transcript   String?
+  chapters     String?
   genre        String     @default("General")
   creatorId    Int
   creator      User       @relation(fields: [creatorId], references: [id])

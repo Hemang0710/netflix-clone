@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { transcribesAudio, generateSummary } from "@/lib/openai";
-import { use } from "react";
+import { transcribesAudio, generateSummary, generateChapters } from "@/lib/openai";
 
 export async function POST(request, {params}) {
     try {
@@ -41,13 +40,21 @@ export async function POST(request, {params}) {
 
         let transcript = null
         let aiSummary = null
+        let chapters = null
 
         try{
             transcript = await transcribesAudio(content.videoUrl)
-            aiSummary = await generateSummary(transcript, content.title)
+
+            //Run summary + chapters in parallel (faster)
+            const [summary, chapterData] = await Promise.all([
+                generateSummary(transcript, content.title),
+                generateChapters(transcript,content.duration),
+            ])
+
+            aiSummary =  summary
+            chapters = chapterData ? JSON.stringify(chapterData) : null
         } catch (aiError) {
             console.error("AI processing error:", aiError)
-            //Don't fail - just save what we have
         }
 
         //Update content with AI results
@@ -56,6 +63,7 @@ export async function POST(request, {params}) {
             data: {
                 transcript: transcript || null,
                 aiSummary: aiSummary || null,
+                chapters: chapters || null,
                 status: "ready",
             },
         })
@@ -63,8 +71,9 @@ export async function POST(request, {params}) {
         return NextResponse.json({
             success: true,
             data: {
-                transcript: updated.transcript,
-                aiSummary: updated.aiSummary,
+                transcript: !!updated.transcript,
+                aiSummary: !!updated.aiSummary,
+                chapters: updated.chapters ? JSON.parse(updated.chapters) : null,
             },
         })
     } catch (error) {

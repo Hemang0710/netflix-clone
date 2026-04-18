@@ -3,6 +3,8 @@
 
 import { useRef } from "react"
 import VideoChapters from "./VideoChapters"
+import QuizSection from "./QuizSection"
+
 
 export default function WatchPageClient({ content, chapters, creatorName }) {
   const videoRef = useRef(null)
@@ -66,6 +68,11 @@ export default function WatchPageClient({ content, chapters, creatorName }) {
               </p>
             </div>
           )}
+
+      <QuizSection
+        contentId={content.id}
+        hasTranscript={!!content.transcript}
+      />
 
           {/* Transcript */}
           {content.transcript && (

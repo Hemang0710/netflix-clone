@@ -1,4 +1,5 @@
 import OpenAI from "openai"
+import { tr } from "zod/locales"
 
 //-- Provider Config ---
 const PROVIDER = process.env.AI_PROVIDER || "groq" // "groq" | "openai" | "gemini"
@@ -135,4 +136,52 @@ export async function generateChapters(transcript, duration) {
         console.error("Chapter generation error:", error.message)
         return null
     }
+}
+
+export async function generateQuiz(transcript, title) {
+  try {
+    const completion = await aiClient.chat.completions.create({
+      model: config.summaryModel,
+      messages: [
+        {
+          role: "system",
+          content: `You generate multiple choice quiz questions from video transcripts.
+Always respond with valid JSON only.`,
+        },
+        {
+          role: "user",
+          content: `Create 5 quiz questions for the video "${title}".
+
+Transcript:
+${transcript.slice(0, 4000)}
+
+Return ONLY this JSON format:
+[
+  {
+    "question": "What is the main topic discussed?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correct": 0,
+    "explanation": "Brief explanation of why this is correct"
+  }
+]
+
+Rules:
+- correct is the index (0-3) of the correct option
+- Questions test understanding, not memorization
+- Mix easy and medium difficulty
+- Options should all be plausible`,
+        },
+      ],
+      max_tokens: 800,
+      temperature: 0.4,
+    })
+
+    const raw = completion.choices[0].message.content
+    const cleaned = raw.replace(/```json\n?|\n?```/g, "").trim()
+    return JSON.parse(cleaned)
+
+  } catch (error) {
+    console.error("Quiz generation error:", error.message)
+    return null
+  }
 }

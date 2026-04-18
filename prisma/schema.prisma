@@ -8,8 +8,6 @@ datasource db {
   // directUrl = env("DIRECT_URL")
 }
 
-
-
 model User {
   id           Int           @id @default(autoincrement())
   email        String        @unique
@@ -21,6 +19,7 @@ model User {
   purchases    Purchase[]
   subscription Subscription?
   watchlist    Watchlist[]
+  quizAttempts QuizAttempt[]
 }
 
 model Profile {
@@ -33,36 +32,57 @@ model Profile {
 }
 
 model Content {
-  id           Int        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   title        String
   description  String
   videoUrl     String
   thumbnailUrl String?
   duration     Int?
-  price        Float      @default(0)
-  isFree       Boolean    @default(true)
-  status       String     @default("processing")
+  price        Float         @default(0)
+  isFree       Boolean       @default(true)
+  status       String        @default("processing")
   aiSummary    String?
   transcript   String?
   chapters     String?
-  genre        String     @default("General")
+  genre        String        @default("General")
   creatorId    Int
-  creator      User       @relation(fields: [creatorId], references: [id])
+  creator      User          @relation(fields: [creatorId], references: [id])
   purchases    Purchase[]
-  views        Int        @default(0)
-  createdAt    DateTime   @default(now())
+  views        Int           @default(0)
+  createdAt    DateTime      @default(now())
+  quiz         Quiz?
+  attempts     QuizAttempt[]
+}
+
+model Quiz {
+  id        Int      @id @default(autoincrement())
+  contentId Int      @unique
+  content   Content  @relation(fields: [contentId], references: [id])
+  questions String // JSON array of questions
+  createdAt DateTime @default(now())
+}
+
+model QuizAttempt {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  score     Int // 0-100
+  answers   String // JSON
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  content   Content  @relation(fields: [contentId], references: [id])
 }
 
 model Subscription {
-  id             Int      @id @default(autoincrement())
-  userId         Int      @unique
-  user           User     @relation(fields: [userId], references: [id])
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  user             User     @relation(fields: [userId], references: [id])
   stripeCustomerId String?
-  stripeSubId    String?  @unique
-  plan           String
-  status         String   @default("active")
-  periodEnd      DateTime
-  createdAt      DateTime @default(now())
+  stripeSubId      String?  @unique
+  plan             String
+  status           String   @default("active")
+  periodEnd        DateTime
+  createdAt        DateTime @default(now())
 }
 
 model Purchase {

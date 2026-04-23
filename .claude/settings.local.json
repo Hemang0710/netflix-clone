@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx prisma *)",
+      "Bash(cat prisma/prisma.config.ts)",
+      "Bash(cat prisma.config.ts)"
+    ]
+  }
+}

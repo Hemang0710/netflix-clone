@@ -38,10 +38,16 @@ export async function POST(request) {
       )
     }
 
-    // 4. Hash and create
+    // 4. Hash and create user + seed credits atomically
     const hashedPassword = await bcrypt.hash(password, 12)
-    const user = await prisma.user.create({
-      data: { email, password: hashedPassword },
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: { email, password: hashedPassword },
+      })
+      await tx.userCredits.create({
+        data: { userId: newUser.id, credits: 10 },
+      })
+      return newUser
     })
 
     return NextResponse.json(

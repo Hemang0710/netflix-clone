@@ -23,24 +23,19 @@ function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError("")
-
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
-
       const data = await res.json()
-
       if (!res.ok) {
         setError(data.message)
         return
       }
-
       router.push("/browse")
       router.refresh()
-
     } catch {
       setError("Something went wrong. Try again.")
     } finally {
@@ -49,35 +44,35 @@ function LoginForm() {
   }
 
   return (
-    <div
-      className="relative min-h-screen bg-black flex items-center justify-center"
-      style={{
-        backgroundImage: "url('https://assets.nflxext.com/ffe/siteui/vlv3/9d3533b2-0e2b-40b2-95e0-ecd7979cc88b/web/IN-en-20250303-TRIFECTA-perspective_5cebc697-7bf1-4c90-9c6e-08e8b6f77614_large.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div className="absolute inset-0 bg-black/60" />
+    <div className="relative min-h-screen bg-[#050508] flex items-center justify-center px-4 overflow-hidden">
+      {/* Background orbs */}
+      <div className="orb w-96 h-96 bg-indigo-600 top-0 left-0 animate-float" />
+      <div className="orb w-80 h-80 bg-violet-600 bottom-0 right-0 animate-float-delayed" />
 
-      <div className="absolute top-8 left-12">
-        <span className="text-red-600 text-5xl font-black tracking-tighter">
-          NETFLIX
+      {/* Logo */}
+      <div className="absolute top-6 left-6 md:left-12 flex items-center gap-2">
+        <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
+          <span className="text-white font-black text-sm">S</span>
+        </div>
+        <span className="text-white font-black text-xl tracking-tight">
+          Stream<span className="gradient-text">AI</span>
         </span>
       </div>
 
-      <div className="relative z-10 bg-black/80 backdrop-blur-sm rounded-md p-16 w-full max-w-md">
-        <h1 className="text-white text-3xl font-bold mb-8">Sign In</h1>
+      {/* Card */}
+      <div className="relative z-10 glass-card rounded-2xl px-8 py-10 w-full max-w-md">
+        <h1 className="text-white text-2xl font-black mb-1 tracking-tight">Welcome back</h1>
+        <p className="text-slate-500 text-sm mb-8">Sign in to continue learning</p>
 
-        {/* Google error message */}
         {googleError && (
-          <p className="text-red-500 text-sm mb-4">
+          <p className="text-red-400 text-sm mb-4 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
             {googleError === "google_denied"
               ? "Google sign-in was cancelled."
               : "Google sign-in failed. Please try again."}
           </p>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
             type="email"
             name="email"
@@ -85,7 +80,7 @@ function LoginForm() {
             value={formData.email}
             onChange={handleChange}
             required
-            className="bg-zinc-800 text-white placeholder-zinc-400 rounded px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-white/30"
+            className="bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
           />
           <input
             type="password"
@@ -94,33 +89,35 @@ function LoginForm() {
             value={formData.password}
             onChange={handleChange}
             required
-            className="bg-zinc-800 text-white placeholder-zinc-400 rounded px-4 py-4 text-base focus:outline-none focus:ring-2 focus:ring-white/30"
+            className="bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
           />
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && (
+            <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+              {error}
+            </p>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="bg-red-600 hover:bg-red-700 disabled:bg-red-800 disabled:cursor-not-allowed text-white font-semibold py-4 rounded mt-4 transition-colors"
+            className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl mt-2 transition-all glow-indigo-sm text-sm"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
 
-        {/* Divider */}
         <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-zinc-700" />
-          <span className="text-zinc-500 text-sm">or</span>
-          <div className="flex-1 h-px bg-zinc-700" />
+          <div className="flex-1 h-px bg-white/8" />
+          <span className="text-slate-600 text-xs">or</span>
+          <div className="flex-1 h-px bg-white/8" />
         </div>
 
-        {/* Google Sign In Button */}
         <a
           href="/api/auth/google"
-          className="flex items-center justify-center gap-3 w-full py-4 rounded bg-white hover:bg-zinc-100 text-black font-semibold transition-colors"
+          className="flex items-center justify-center gap-3 w-full py-3.5 rounded-xl bg-white hover:bg-slate-100 text-black font-semibold transition-colors text-sm"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24">
+          <svg width="18" height="18" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -129,10 +126,10 @@ function LoginForm() {
           Continue with Google
         </a>
 
-        <p className="text-zinc-400 mt-8 text-base">
-          New to Netflix?{" "}
-          <Link href="/register" className="text-white hover:underline font-semibold">
-            Sign up now
+        <p className="text-slate-500 mt-6 text-sm text-center">
+          New to StreamAI?{" "}
+          <Link href="/register" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
+            Create free account
           </Link>
         </p>
       </div>
@@ -142,9 +139,8 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="bg-black min-h-screen" />}>
+    <Suspense fallback={<div className="bg-[#050508] min-h-screen" />}>
       <LoginForm />
     </Suspense>
   )
 }
-

@@ -1,47 +1,45 @@
-//Single source of truth for all plan data
-
-export const PLANS =[
-    {
-        id: "basic",
-        name: "Basic",
-        price: 6.99,
-        priceId: process.env.STRIPE_PRICE_BASIC,
-        features: [
-            "720 video quality",
-            "Watch on 1 device",
-            "Access all content",
-            "AI transcripts",
-        ],
-        color: "zinc",
-    },
-    {
-        id:"standard",
-        name: "Standard",
-        price: 13.99,
-        priceId: process.env.STRIPE_PRICE_STANDARD,
-        popular: true,
-        features:[
-            "1080 video quality",
-            "Watch on 2 devices",
-            "Access all content",
-            "AI transcripts + summaries",
-            "Download videos",
-        ],
-        color: "red",
-    },
-    {
-        id: "premium",
-        name: "Premium",
-        price: 22.99,
-        priceId: process.env.STRIPE_PRICE_PREMIUM,
-        features: [
-            "4K video quality",
-            "Watch on 4 devices",
-            "Access all content",
-            "AI transcripts + summaries",
-            "Download videos",
-            "Early access to new features",
-        ],
-        color: "yellow",
-    },
+export const PLANS = [
+  {
+    id: "basic",
+    name: "Learner",
+    price: 6.99,
+    priceId: process.env.STRIPE_PRICE_BASIC,
+    features: [
+      "Unlimited course access",
+      "AI quiz generation",
+      "Auto transcription",
+      "Progress tracking",
+      "Chapter navigation",
+    ],
+  },
+  {
+    id: "standard",
+    name: "Pro Learner",
+    price: 13.99,
+    priceId: process.env.STRIPE_PRICE_STANDARD,
+    popular: true,
+    features: [
+      "Everything in Learner",
+      "AI Debate Partner",
+      "Spaced repetition flashcards",
+      "Learning activity heatmap",
+      "50 AI creator credits/month",
+      "Priority AI processing",
+    ],
+  },
+  {
+    id: "premium",
+    name: "Creator Pro",
+    price: 22.99,
+    priceId: process.env.STRIPE_PRICE_PREMIUM,
+    features: [
+      "Everything in Pro Learner",
+      "200 AI creator credits/month",
+      "AI Script Writer",
+      "AI Thumbnail Generator",
+      "Course Outline AI",
+      "Analytics dashboard",
+      "Early access to new AI tools",
+    ],
+  },
 ]

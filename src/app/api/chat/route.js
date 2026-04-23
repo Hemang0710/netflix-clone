@@ -8,6 +8,7 @@ import { checkRateLimit } from "@/lib/rateLimit"
 const groq = createOpenAI({
   apiKey: process.env.GROQ_API_KEY,
   baseURL: "https://api.groq.com/openai/v1",
+  compatibility: "compatible", // forces /v1/chat/completions, not /v1/responses
 })
 
 export async function POST(request) {
@@ -74,13 +75,16 @@ You have access to the full transcript. Use it to answer questions accurately.
 TRANSCRIPT:
 ${transcript}
 
-Keep answers concise (2-4 paragraphs). If something isn't in the transcript, say so.`
-      : `You are a helpful AI assistant for a video learning platform. Be concise and helpful.`
+Rules:
+- Keep answers concise (2-4 paragraphs).
+- If the user says they're confused or don't understand without specifying what, assume they mean the most recent or complex concept in the transcript and explain that — never ask "which part?".
+- If something isn't in the transcript, say so.`
+      : `You are a helpful AI assistant for a video learning platform. Be concise and helpful. If the user says they're confused, explain the most relevant concept you can from context — never ask them to clarify which part.`
 
     console.log("🤖 Calling Groq API...")
 
     const result = streamText({
-      model: groq("llama-3.3-70b-versatile"),
+      model: groq.chat("llama-3.3-70b-versatile"),
       system: systemPrompt,
       messages,
       maxTokens: 500,

@@ -6,6 +6,8 @@ import { jwtVerify } from "jose"
 export async function proxy(request) {
   const token = request.cookies.get("token")?.value
   const { pathname } = request.nextUrl
+  const PROTECTED = ["/browse", "/watch", "/creator", "/account", "/subscribe/success", "/learn"]
+
 
   const isProtectedRoute = pathname.startsWith("/browse") || pathname.startsWith("/creator")
   const isAuthRoute = pathname === "/login" || pathname === "/register"

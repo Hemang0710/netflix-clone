@@ -2,8 +2,8 @@ import { WatchlistProvider } from "@/context/WatchlistContext";
 import "./globals.css"
 
 export const metadata = {
-  title : "Netflix Clone",
-  description: "Built for learning",
+  title: "StreamAI — Learn with AI",
+  description: "AI-powered learning platform. Generate scripts, thumbnails, and course outlines with AI.",
 }
 
 export default function RootLayout ({ children }){

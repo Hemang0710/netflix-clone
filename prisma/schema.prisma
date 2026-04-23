@@ -9,17 +9,80 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  password     String?
-  role         String        @default("viewer")
-  createdAt    DateTime      @default(now())
-  profile      Profile?
-  content      Content[]
-  purchases    Purchase[]
-  subscription Subscription?
-  watchlist    Watchlist[]
-  quizAttempts QuizAttempt[]
+  id                 Int                @id @default(autoincrement())
+  email              String             @unique
+  password           String?
+  role               String             @default("viewer")
+  createdAt          DateTime           @default(now())
+  profile            Profile?
+  content            Content[]
+  purchases          Purchase[]
+  subscription       Subscription?
+  watchlist          Watchlist[]
+  quizAttempts       QuizAttempt[]
+  watchProgress      WatchProgress[]
+  credits            UserCredits?
+  aiGenerations      AIGeneration[]
+  flashcards         Flashcard[]
+  learningInsights   LearningInsight[]
+  externalContents   ExternalContent[]
+  externalProgresses ExternalProgress[]
+}
+
+model LearningInsight {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  contentId   Int
+  concept     String
+  explainType String
+  helpful     Boolean
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model ExternalContent {
+  id           Int      @id @default(autoincrement())
+  userId       Int // who saved it
+  platform     String   @default("youtube") // youtube | vimeo (future)
+  externalId   String // YouTube video ID
+  url          String // original URL
+  title        String
+  description  String?
+  thumbnailUrl String?
+  duration     Int? // seconds
+  channelName  String?
+  transcript   String? // fetched + stored
+  aiSummary    String?
+  chapters     String? // JSON
+  status       String   @default("pending") // pending | ready | failed
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+
+  watchProgress ExternalProgress[]
+  quiz          ExternalQuiz?
+
+  @@unique([userId, externalId]) // user can't save same video twice
+}
+
+model ExternalProgress {
+  id        Int             @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  timestamp Float           @default(0)
+  completed Boolean         @default(false)
+  updatedAt DateTime        @updatedAt
+  user      User            @relation(fields: [userId], references: [id])
+  content   ExternalContent @relation(fields: [contentId], references: [id])
+
+  @@unique([userId, contentId])
+}
+
+model ExternalQuiz {
+  id        Int             @id @default(autoincrement())
+  contentId Int             @unique
+  content   ExternalContent @relation(fields: [contentId], references: [id])
+  questions String // JSON
+  createdAt DateTime        @default(now())
 }
 
 model Profile {
@@ -32,26 +95,28 @@ model Profile {
 }
 
 model Content {
-  id           Int           @id @default(autoincrement())
-  title        String
-  description  String
-  videoUrl     String
-  thumbnailUrl String?
-  duration     Int?
-  price        Float         @default(0)
-  isFree       Boolean       @default(true)
-  status       String        @default("processing")
-  aiSummary    String?
-  transcript   String?
-  chapters     String?
-  genre        String        @default("General")
-  creatorId    Int
-  creator      User          @relation(fields: [creatorId], references: [id])
-  purchases    Purchase[]
-  views        Int           @default(0)
-  createdAt    DateTime      @default(now())
-  quiz         Quiz?
-  attempts     QuizAttempt[]
+  id            Int             @id @default(autoincrement())
+  title         String
+  description   String
+  videoUrl      String
+  thumbnailUrl  String?
+  duration      Int?
+  price         Float           @default(0)
+  isFree        Boolean         @default(true)
+  status        String          @default("processing")
+  aiSummary     String?
+  transcript    String?
+  chapters      String?
+  genre         String          @default("General")
+  creatorId     Int
+  creator       User            @relation(fields: [creatorId], references: [id])
+  purchases     Purchase[]
+  views         Int             @default(0)
+  createdAt     DateTime        @default(now())
+  quiz          Quiz?
+  attempts      QuizAttempt[]
+  watchProgress WatchProgress[]
+  flashcards    Flashcard[]
 }
 
 model Quiz {
@@ -106,4 +171,53 @@ model Watchlist {
   posterPath String?
   user       User     @relation(fields: [userId], references: [id])
   addedAt    DateTime @default(now())
+}
+
+model WatchProgress {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  timestamp Float    @default(0) // seconds into video
+  duration  Float    @default(0) // total video duration
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  content   Content  @relation(fields: [contentId], references: [id])
+
+  @@unique([userId, contentId]) // one record per user per video
+}
+
+model UserCredits {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  credits   Int      @default(10)
+  user      User     @relation(fields: [userId], references: [id])
+  updatedAt DateTime @updatedAt
+}
+
+model AIGeneration {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  type        String
+  prompt      String
+  result      String?
+  status      String   @default("completed")
+  creditsUsed Int
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model Flashcard {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  contentId   Int
+  front       String
+  back        String
+  interval    Int      @default(1)
+  repetitions Int      @default(0)
+  easeFactor  Float    @default(2.5)
+  dueDate     DateTime @default(now())
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  content     Content  @relation(fields: [contentId], references: [id])
 }

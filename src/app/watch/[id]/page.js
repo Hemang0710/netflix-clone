@@ -1,8 +1,7 @@
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import {notFound} from "next/navigation"
-import AIChatSidebar from "@/components/AIChatSidebar";
-import WatchPageClient  from "@/components/WatchPageClient"
+import WatchPageClient from "@/components/WatchPageClient"
 
 
 export default async function WatchPage({params}) {
@@ -130,10 +129,6 @@ export default async function WatchPage({params}) {
             </div>
          
     
-        <AIChatSidebar
-        contentId={content.id}
-        hasTranscript={!!content.transcript}
-        />
             </div>
     </main>
     )

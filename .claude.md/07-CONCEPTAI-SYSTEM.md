@@ -12,7 +12,7 @@ concept in that specific video.
 Current platforms (LinkedIn, Udemy, Coursera):
   Learner confused → AI gives text response → still confused
 
-StreamAI ConceptAI:
+LearnAI ConceptAI:
   Learner confused → AI detects confusion type → generates:
     - Animated SVG diagram (visual learners)
     - Analogy story (conceptual learners)

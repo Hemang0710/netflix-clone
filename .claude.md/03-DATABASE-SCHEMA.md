@@ -1,4 +1,4 @@
-# StreamAI — Database Schema
+# LearnAI — Database Schema
 
 ## Critical Prisma 7 Rules
 - `prisma.config.ts` handles the database URL — NOT schema.prisma

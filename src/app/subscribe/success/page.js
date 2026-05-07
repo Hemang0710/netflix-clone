@@ -11,7 +11,7 @@ export default async function SuccessPage({searchParams}) {
                     You&apos;re subscribed!
                 </h1>
                 <p className="text-zinc-400 mb-8">
-                    Welcome to StreamAI. Your account is now active.
+                    Welcome to LearnAI. Your account is now active.
                 </p>
                 <Link
                   href="/browse"

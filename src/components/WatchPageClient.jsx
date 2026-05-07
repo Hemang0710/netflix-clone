@@ -6,14 +6,24 @@ import QuizSection from "./QuizSection"
 import FlashcardDeck from "./FlashcardDeck"
 import DebateMode from "./DebateMode"
 import AIChatSidebar from "./AIChatSidebar"
+import NotesPanel from "./NotesPanel"
+import ConceptMapPanel from "./ConceptMapPanel"
+import CommentsSection from "./CommentsSection"
+import DifficultyBadge from "./DifficultyBadge"
+import TranscriptExplainer from "./TranscriptExplainer"
+import StudyGroupPanel from "./StudyGroupPanel"
 import { useVideoProgress } from "@/hooks/useVideoProgress"
 import { useVideoConfusion } from "@/hooks/useVideoConfusion"
 
 const TABS = [
   { id: "overview", label: "Overview" },
+  { id: "notes",    label: "📝 Notes" },
+  { id: "map",      label: "🗺 Map" },
+  { id: "comments", label: "💬 Chat" },
   { id: "quiz",     label: "🧠 Quiz" },
-  { id: "cards",    label: "🃏 Flashcards" },
+  { id: "cards",    label: "🃏 Cards" },
   { id: "debate",   label: "⚔️ Debate" },
+  { id: "study-groups", label: "👥 Groups" },
 ]
 
 export default function WatchPageClient({ content, chapters, creatorName }) {
@@ -71,14 +81,17 @@ export default function WatchPageClient({ content, chapters, creatorName }) {
             <VideoChapters chapters={chapters} videoRef={videoRef} />
           )}
 
+          {/* Difficulty badge */}
+          <DifficultyBadge contentId={content.id} difficulty={content.difficulty} />
+
           {/* Tab bar */}
-          <div className="flex gap-1 p-1 bg-white/3 rounded-xl border border-white/5">
+          <div className="flex gap-1 p-1 bg-white/3 rounded-xl border border-white/5 overflow-x-auto scrollbar-hide">
             {TABS.map((tab) => (
-              (tab.id !== "quiz" && tab.id !== "cards" && tab.id !== "debate") || content.transcript ? (
+              (tab.id !== "quiz" && tab.id !== "cards" && tab.id !== "debate" && tab.id !== "notes" && tab.id !== "map") || content.transcript ? (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                     activeTab === tab.id
                       ? "bg-indigo-600 text-white glow-indigo-sm"
                       : "text-slate-400 hover:text-white hover:bg-white/5"
@@ -107,14 +120,24 @@ export default function WatchPageClient({ content, chapters, creatorName }) {
               )}
 
               {content.transcript && (
-                <div className="glass-card rounded-2xl p-5">
-                  <h3 className="text-white font-bold mb-3 text-sm">📝 Transcript</h3>
-                  <div className="text-slate-400 text-sm leading-relaxed max-h-56 overflow-y-auto scrollbar-hide">
-                    {content.transcript}
-                  </div>
-                </div>
+                <TranscriptExplainer
+                  transcript={content.transcript}
+                  videoTitle={content.title}
+                />
               )}
             </div>
+          )}
+
+          {activeTab === "notes" && content.transcript && (
+            <NotesPanel contentId={content.id} hasTranscript={!!content.transcript} videoRef={videoRef} />
+          )}
+
+          {activeTab === "map" && content.transcript && (
+            <ConceptMapPanel contentId={content.id} transcript={content.transcript} videoTitle={content.title} />
+          )}
+
+          {activeTab === "comments" && (
+            <CommentsSection contentId={content.id} />
           )}
 
           {activeTab === "quiz" && content.transcript && (
@@ -127,6 +150,10 @@ export default function WatchPageClient({ content, chapters, creatorName }) {
 
           {activeTab === "debate" && content.transcript && (
             <DebateMode contentId={content.id} contentTitle={content.title} />
+          )}
+
+          {activeTab === "study-groups" && (
+            <StudyGroupPanel contentId={content.id} />
           )}
         </div>
 

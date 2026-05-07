@@ -5,6 +5,7 @@ import Image from "next/image"
 import Navbar from "@/components/Navbar"
 import { redirect } from "next/navigation"
 import DeleteVideoButton from "@/components/DeleteVideoButton"
+import VideoAnalyticsPanel from "@/components/VideoAnalyticsPanel"
 
 export default async function CreatorDashboard() {
   const user = await getCurrentUser()
@@ -43,6 +44,12 @@ export default async function CreatorDashboard() {
             <p className="text-slate-500 text-sm mt-1">Manage your courses and track learner progress</p>
           </div>
           <div className="flex gap-3">
+            <Link
+              href="/creator/paths"
+              className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/8 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm"
+            >
+              🎓 Paths
+            </Link>
             <Link
               href="/creator/studio"
               className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/8 text-white font-semibold px-5 py-2.5 rounded-xl transition-all text-sm"
@@ -101,7 +108,8 @@ export default async function CreatorDashboard() {
           ) : (
             <div className="divide-y divide-white/5">
               {content.map((video) => (
-                <div key={video.id} className="px-6 py-4 flex items-center justify-between hover:bg-white/2 transition-colors">
+                <div key={video.id} className="hover:bg-white/2 transition-colors border-b border-white/5 last:border-0">
+                <div className="px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     {/* Thumbnail */}
                     <div className="w-24 h-14 bg-[#0d0d1a] rounded-xl overflow-hidden shrink-0 border border-white/5">
@@ -150,6 +158,8 @@ export default async function CreatorDashboard() {
                     </Link>
                     <DeleteVideoButton videoId={video.id} videoTitle={video.title} />
                   </div>
+                </div>
+                <VideoAnalyticsPanel videoId={video.id} videoTitle={video.title} />
                 </div>
               ))}
             </div>

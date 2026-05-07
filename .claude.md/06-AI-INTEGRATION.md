@@ -1,4 +1,4 @@
-# StreamAI — AI Integration Reference
+# LearnAI — AI Integration Reference
 
 ## AI Providers Configured
 

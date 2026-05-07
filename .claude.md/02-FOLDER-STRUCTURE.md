@@ -1,4 +1,4 @@
-# StreamAI — Folder Structure
+# LearnAI — Folder Structure
 
 ## Root Level
 ```

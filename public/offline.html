@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Offline - LearnAI</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #050508 0%, #1a1a2e 100%);
+        color: #ffffff;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 500px;
+        text-align: center;
+      }
+
+      .icon {
+        font-size: 80px;
+        margin-bottom: 20px;
+        display: block;
+      }
+
+      h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+
+      p {
+        font-size: 16px;
+        color: #a0aec0;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+
+      .status-box {
+        background: rgba(79, 70, 229, 0.1);
+        border: 1px solid rgba(79, 70, 229, 0.3);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 30px;
+      }
+
+      .status-box p {
+        margin: 0;
+        font-size: 14px;
+        color: #818cf8;
+      }
+
+      .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary {
+        background: #4f46e5;
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: #4338ca;
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+      }
+
+      .tips {
+        text-align: left;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 30px;
+      }
+
+      .tips h3 {
+        font-size: 14px;
+        text-transform: uppercase;
+        color: #818cf8;
+        margin-bottom: 12px;
+      }
+
+      .tips ul {
+        list-style: none;
+        font-size: 14px;
+        color: #a0aec0;
+      }
+
+      .tips li {
+        padding: 6px 0;
+        display: flex;
+        align-items: center;
+      }
+
+      .tips li:before {
+        content: "✓";
+        color: #818cf8;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+
+      @media (max-width: 640px) {
+        h1 {
+          font-size: 24px;
+        }
+
+        .icon {
+          font-size: 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <span class="icon">📡</span>
+
+      <h1>You're Offline</h1>
+      <p>
+        It looks like you've lost your internet connection. Don't worry, you can
+        still access cached content!
+      </p>
+
+      <div class="status-box">
+        <p id="status">Waiting for connection...</p>
+      </div>
+
+      <div class="button-group">
+        <button class="btn-primary" onclick="location.reload()">
+          Try Again
+        </button>
+        <button class="btn-secondary" onclick="goHome()">
+          Go to Home
+        </button>
+      </div>
+
+      <div class="tips">
+        <h3>What you can do offline:</h3>
+        <ul>
+          <li>View previously watched videos</li>
+          <li>Review your notes and study plans</li>
+          <li>Continue with flashcards</li>
+          <li>Access your badges and achievements</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      function goHome() {
+        window.location.href = "/";
+      }
+
+      // Check connection status
+      function updateStatus() {
+        const status = document.getElementById("status");
+        if (navigator.onLine) {
+          status.textContent = "✓ You're back online!";
+          status.parentElement.style.borderColor = "rgba(16, 185, 129, 0.3)";
+          status.parentElement.style.background = "rgba(16, 185, 129, 0.1)";
+          status.style.color = "#6ee7b7";
+
+          // Redirect after 2 seconds
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          status.textContent = "Offline - Cached content available";
+        }
+      }
+
+      // Listen for connection changes
+      window.addEventListener("online", updateStatus);
+      window.addEventListener("offline", updateStatus);
+
+      // Initial check
+      updateStatus();
+    </script>
+  </body>
+</html>

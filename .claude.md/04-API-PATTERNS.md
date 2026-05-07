@@ -1,4 +1,4 @@
-# StreamAI — API Patterns & Conventions
+# LearnAI — API Patterns & Conventions
 
 ## Every API Route Must Follow This Pattern
 

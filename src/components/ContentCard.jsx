@@ -92,6 +92,11 @@ export default function ContentCard({ content, progress }) {
             <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/6">{content.genre}</span>
             <span>{content.views.toLocaleString()} views</span>
           </div>
+          {content.difficulty && content.difficulty !== "intermediate" && (
+            <p className={`text-[10px] mt-1 font-medium ${content.difficulty === "beginner" ? "text-emerald-400" : "text-red-400"}`}>
+              {content.difficulty === "beginner" ? "🟢 Beginner" : "🔴 Advanced"}
+            </p>
+          )}
           {pct > 0 && (
             <p className="text-indigo-400 text-[10px] mt-1.5 font-medium">{pct}% complete</p>
           )}

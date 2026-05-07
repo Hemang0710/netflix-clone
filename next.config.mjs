@@ -1,6 +1,7 @@
+import withPWA from "next-pwa";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   reactCompiler: true,
   images: {
     remotePatterns: [
@@ -9,7 +10,6 @@ const nextConfig = {
         hostname: "image.tmdb.org",
         pathname: "/t/p/**",
       },
-      //This is for s3 bucket
       {
         protocol:"https",
         hostname:"*.amazonaws.com",
@@ -18,6 +18,14 @@ const nextConfig = {
     ],
   },
   serverExternalPackages:["@prisma/client", "bcryptjs", "jsonwebtoken"],
+  turbopack: {}
 };
 
-export default nextConfig;
+const withPWAConfig = withPWA({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: true
+});
+
+export default withPWAConfig(nextConfig);

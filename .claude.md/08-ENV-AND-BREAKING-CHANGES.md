@@ -1,4 +1,4 @@
-# StreamAI — Environment Variables & Breaking Changes
+# LearnAI — Environment Variables & Breaking Changes
 
 ## Complete .env File
 

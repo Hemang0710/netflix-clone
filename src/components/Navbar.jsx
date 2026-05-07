@@ -64,7 +64,8 @@ export default function Navbar() {
   const navLinks = [
     { href: "/browse",            label: "Discover" },
     { href: "/learn",             label: "My Learning" },
-    { href: "/creator/studio",    label: "AI Studio" },
+    { href: "/learn/paths",       label: "Paths" },
+    { href: "/leaderboard",       label: "🏆" },
     { href: "/creator/dashboard", label: "Dashboard" },
     { href: "/subscribe",         label: "Plans" },
   ]
@@ -76,10 +77,10 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/browse" className="flex items-center gap-2 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center glow-indigo-sm">
-            <span className="text-white text-sm font-black">S</span>
+            <span className="text-white text-sm font-black">L</span>
           </div>
           <span className="text-white font-black text-xl tracking-tight hidden sm:block">
-            Stream<span className="gradient-text">AI</span>
+            Learn<span className="gradient-text">AI</span>
           </span>
         </Link>
 

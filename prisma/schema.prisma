@@ -9,24 +9,34 @@ datasource db {
 }
 
 model User {
-  id                 Int                @id @default(autoincrement())
-  email              String             @unique
-  password           String?
-  role               String             @default("viewer")
-  createdAt          DateTime           @default(now())
-  profile            Profile?
-  content            Content[]
-  purchases          Purchase[]
-  subscription       Subscription?
-  watchlist          Watchlist[]
-  quizAttempts       QuizAttempt[]
-  watchProgress      WatchProgress[]
-  credits            UserCredits?
-  aiGenerations      AIGeneration[]
-  flashcards         Flashcard[]
-  learningInsights   LearningInsight[]
-  externalContents   ExternalContent[]
-  externalProgresses ExternalProgress[]
+  id                       Int                @id @default(autoincrement())
+  email                    String             @unique
+  password                 String?
+  role                     String             @default("viewer")
+  createdAt                DateTime           @default(now())
+  profile                  Profile?
+  content                  Content[]
+  purchases                Purchase[]
+  subscription             Subscription?
+  watchlist                Watchlist[]
+  quizAttempts             QuizAttempt[]
+  watchProgress            WatchProgress[]
+  credits                  UserCredits?
+  aiGenerations            AIGeneration[]
+  flashcards               Flashcard[]
+  learningInsights         LearningInsight[]
+  externalContents         ExternalContent[]
+  externalProgresses       ExternalProgress[]
+  notes                    Note[]
+  comments                 Comment[]
+  enrollments              PathEnrollment[]
+  certificates             Certificate[]
+  learningPaths            LearningPath[]
+  badgeIssuances           BadgeIssuance[]
+  studyGroupMembers        StudyGroupMember[]
+  studyGroupMessages       StudyGroupMessage[]
+  studyPlans               StudyPlan[]
+  microLessonProgresses    MicroLessonProgress[]
 }
 
 model LearningInsight {
@@ -108,6 +118,7 @@ model Content {
   transcript    String?
   chapters      String?
   genre         String          @default("General")
+  difficulty    String          @default("intermediate")
   creatorId     Int
   creator       User            @relation(fields: [creatorId], references: [id])
   purchases     Purchase[]
@@ -117,6 +128,12 @@ model Content {
   attempts      QuizAttempt[]
   watchProgress WatchProgress[]
   flashcards    Flashcard[]
+  notes         Note[]
+  comments      Comment[]
+  badges        Badge[]
+  studyGroups   StudyGroup[]
+  studyTasks    StudyTask[]
+  microLessons  MicroLesson[]
 }
 
 model Quiz {
@@ -220,4 +237,268 @@ model Flashcard {
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
   content     Content  @relation(fields: [contentId], references: [id])
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  timestamp Float?
+  body      String
+  isAI      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  content   Content  @relation(fields: [contentId], references: [id])
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  contentId Int
+  parentId  Int?
+  body      String
+  isFlagged Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  content   Content   @relation(fields: [contentId], references: [id])
+  parent    Comment?  @relation("Replies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("Replies")
+}
+
+model LearningPath {
+  id           Int              @id @default(autoincrement())
+  title        String
+  description  String?
+  creatorId    Int
+  coverUrl     String?
+  isPublished  Boolean          @default(false)
+  videoIds     String           @default("[]")
+  dripEnabled  Boolean          @default(false)
+  dripSchedule String           @default("[]") // [{contentId, unlockAfterDays}]
+  createdAt    DateTime         @default(now())
+  creator      User             @relation(fields: [creatorId], references: [id])
+  enrollments  PathEnrollment[]
+  certificates Certificate[]
+}
+
+model PathEnrollment {
+  id           Int          @id @default(autoincrement())
+  userId       Int
+  pathId       Int
+  completedIds String       @default("[]")
+  enrolledAt   DateTime     @default(now())
+  user         User         @relation(fields: [userId], references: [id])
+  path         LearningPath @relation(fields: [pathId], references: [id])
+
+  @@unique([userId, pathId])
+}
+
+model Certificate {
+  id       Int          @id @default(autoincrement())
+  userId   Int
+  pathId   Int
+  issuedAt DateTime     @default(now())
+  user     User         @relation(fields: [userId], references: [id])
+  path     LearningPath @relation(fields: [pathId], references: [id])
+
+  @@unique([userId, pathId])
+}
+
+model Badge {
+  id              Int              @id @default(autoincrement())
+  contentId       Int
+  content         Content          @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  name            String
+  description     String
+  icon            String           // SVG or image URL
+  criteria        String           // JSON: {minQuizScore: 85, minFlashcardReps: 50, minTimeSpent: 600}
+  isPublished     Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  issuances       BadgeIssuance[]
+}
+
+model BadgeIssuance {
+  id                  Int              @id @default(autoincrement())
+  userId              Int
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeId             Int
+  badge               Badge            @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  // Blockchain
+  hederaTxHash        String?
+  hederaTokenId       String?
+  credentialUrl       String?          // IPFS URL
+  verificationCode    String           @unique
+
+  // Metadata
+  earnedAt            DateTime         @default(now())
+  expiresAt           DateTime?
+  isPublic            Boolean          @default(true)
+  sharedOn            String           @default("[]")  // JSON array: ["linkedin", "twitter"]
+
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  verification        BadgeVerification?
+  @@unique([userId, badgeId])
+}
+
+model BadgeVerification {
+  id                  Int              @id @default(autoincrement())
+  verificationCode    String           @unique
+  badgeIssuanceId     Int              @unique
+  badgeIssuance       BadgeIssuance    @relation(fields: [badgeIssuanceId], references: [id], onDelete: Cascade)
+
+  verifiedBy          String?
+  verificationDate    DateTime?
+  verificationStatus  String           @default("pending") // pending | verified | expired
+
+  createdAt           DateTime         @default(now())
+}
+
+model StudyGroup {
+  id                  Int              @id @default(autoincrement())
+  contentId           Int
+  content             Content          @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  topicName           String
+  description         String?
+
+  maxMembers          Int              @default(5)
+  isActive            Boolean          @default(true)
+  createdAt           DateTime         @default(now())
+  expiresAt           DateTime?
+
+  members             StudyGroupMember[]
+  messages            StudyGroupMessage[]
+}
+
+model StudyGroupMember {
+  id                  Int              @id @default(autoincrement())
+  groupId             Int
+  group               StudyGroup       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId              Int
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  skillLevel          String           @default("intermediate") // beginner | intermediate | advanced
+  quizScore           Int?
+  embedding           String           @default("[]")  // JSON array of floats
+
+  joinedAt            DateTime         @default(now())
+  lastActivity        DateTime         @default(now())
+
+  @@unique([groupId, userId])
+}
+
+model StudyGroupMessage {
+  id                  Int              @id @default(autoincrement())
+  groupId             Int
+  group               StudyGroup       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  userId              Int?
+  user                User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  message             String
+  isAI                Boolean          @default(false)
+
+  isFlagged           Boolean          @default(false)
+  flagReason          String?
+  moderationScore     Float?
+
+  helpfulCount        Int              @default(0)
+
+  createdAt           DateTime         @default(now())
+}
+
+model StudyPlan {
+  id                  Int                    @id @default(autoincrement())
+  userId              Int
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  hoursPerWeek        Int
+  goal                String                 // "certify" | "hobby" | "career_switch"
+  targetCareer        String?
+
+  schedule            String                 // JSON: [{day: "Monday", time: "9am", duration: 60, activity: "watch_lesson"}]
+  preferences         String?                // JSON: {preferMorning: true, ...}
+
+  isActive            Boolean                @default(true)
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  tasks               StudyTask[]
+  adjustments         ScheduleAdjustment[]
+}
+
+model StudyTask {
+  id                  Int                    @id @default(autoincrement())
+  planId              Int
+  plan                StudyPlan              @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  contentId           Int?
+  content             Content?               @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  title               String
+  description         String?
+  taskType            String                 // "watch_lesson" | "quiz" | "flashcards" | "review"
+  duration            Int                    // minutes
+
+  scheduledFor        DateTime
+  completed           Boolean                @default(false)
+  completedAt         DateTime?
+
+  createdAt           DateTime               @default(now())
+}
+
+model ScheduleAdjustment {
+  id                  Int                    @id @default(autoincrement())
+  planId              Int
+  plan                StudyPlan              @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  reason              String                 // "fell_behind" | "ahead" | "lost_interest"
+  adjustment          String                 // JSON description of changes
+  appliedAt           DateTime               @default(now())
+}
+
+model MicroLesson {
+  id                    Int                   @id @default(autoincrement())
+  contentId             Int
+  content               Content               @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  title                 String                // "Python Decorators: Overview"
+  description           String?
+  concept               String                // "decorators"
+
+  startTimestamp        Float                 // Seconds into original video
+  endTimestamp          Float
+  duration              Int                   // Seconds
+  order                 Int                   // Sequence in video
+
+  videoUrl              String?               // Trimmed video URL (if we store separately)
+  transcriptSegment     String                @default("") // Text from that time range
+
+  relatedFlashcards     String                @default("[]") // JSON array of IDs
+
+  createdAt             DateTime              @default(now())
+  progresses            MicroLessonProgress[]
+
+  @@unique([contentId, startTimestamp])
+}
+
+model MicroLessonProgress {
+  id                    Int                   @id @default(autoincrement())
+  userId                Int
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  microLessonId         Int
+  microLesson           MicroLesson           @relation(fields: [microLessonId], references: [id], onDelete: Cascade)
+
+  watched               Boolean               @default(false)
+  quizScore             Int?
+  notesAdded            String?
+
+  watchedAt             DateTime?
+  createdAt             DateTime              @default(now())
+
+  @@unique([userId, microLessonId])
 }

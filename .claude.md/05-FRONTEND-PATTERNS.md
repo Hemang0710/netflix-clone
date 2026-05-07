@@ -1,4 +1,4 @@
-# StreamAI — Frontend Patterns & Conventions
+# LearnAI — Frontend Patterns & Conventions
 
 ## Server vs Client Component Decision
 

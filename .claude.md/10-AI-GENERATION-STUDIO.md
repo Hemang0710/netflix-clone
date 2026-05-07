@@ -1,4 +1,4 @@
-# StreamAI — AI Generation Studio
+# LearnAI — AI Generation Studio
 
 ## What This Is
 

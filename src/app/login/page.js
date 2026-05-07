@@ -127,7 +127,7 @@ function LoginForm() {
         </a>
 
         <p className="text-slate-500 mt-6 text-sm text-center">
-          New to StreamAI?{" "}
+          New to LearnAI?{" "}
           <Link href="/register" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
             Create free account
           </Link>

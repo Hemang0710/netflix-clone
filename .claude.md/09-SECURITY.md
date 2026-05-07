@@ -1,4 +1,4 @@
-# StreamAI — Security Implementation
+# LearnAI — Security Implementation
 
 ## What's Already Built
 

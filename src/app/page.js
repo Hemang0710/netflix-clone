@@ -67,15 +67,15 @@ const STATS = [
 
 const FAQ_ITEMS = [
   {
-    q: "What is StreamAI?",
-    a: "StreamAI is an AI-powered learning platform where creators build courses using AI tools — script writer, thumbnail generator, and course outline AI — and learners access structured, interactive content with quizzes and progress tracking.",
+    q: "What is LearnAI?",
+    a: "LearnAI is an AI-powered learning platform where creators build courses using AI tools — script writer, thumbnail generator, and course outline AI — and learners access structured, interactive content with quizzes and progress tracking.",
   },
   {
     q: "How do AI credits work?",
     a: "Every account starts with 10 free credits. Generating a script costs 2 credits, a thumbnail costs 3, and a course outline costs 1. You can buy more credits or earn them through platform milestones.",
   },
   {
-    q: "What AI models does StreamAI use?",
+    q: "What AI models does LearnAI use?",
     a: "We use Groq's llama-3.3-70b-versatile for fast text generation (scripts, outlines) and OpenAI DALL-E 3 for thumbnail image generation. All AI features run server-side — your data is never sent to third parties.",
   },
   {
@@ -136,7 +136,7 @@ export default function LandingPage() {
 
           {/* Trust line */}
           <p className="text-slate-600 text-sm mt-6">
-            Join 12,000+ learners already building skills on StreamAI
+            Join 12,000+ learners already building skills on LearnAI
           </p>
         </div>
       </section>
@@ -278,7 +278,7 @@ export default function LandingPage() {
             <div className="w-7 h-7 rounded-lg bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center">
               <span className="text-white font-black text-xs">S</span>
             </div>
-            <span className="text-slate-400 font-bold">StreamAI</span>
+            <span className="text-slate-400 font-bold">LearnAI</span>
           </div>
           <div className="flex flex-wrap justify-center gap-6">
             {["Privacy", "Terms", "Help Centre", "Contact", "Careers"].map((link) => (
@@ -287,7 +287,7 @@ export default function LandingPage() {
               </a>
             ))}
           </div>
-          <p className="text-slate-700">© 2026 StreamAI. All rights reserved.</p>
+          <p className="text-slate-700">© 2026 LearnAI. All rights reserved.</p>
         </div>
       </footer>
     </div>

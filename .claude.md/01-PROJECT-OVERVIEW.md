@@ -1,4 +1,4 @@
-# StreamAI — Project Overview
+# LearnAI — Project Overview
 
 ## What This Project Is
 A full-stack AI-powered video learning platform where creators upload content,

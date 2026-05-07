@@ -1,4 +1,4 @@
-# StreamAI — Master Prompt Template
+# LearnAI — Master Prompt Template
 
 When asking any AI (Claude, ChatGPT, etc.) to build features for this project,
 start EVERY conversation with this context block. This prevents the AI from
@@ -9,7 +9,7 @@ making wrong assumptions about your stack or suggesting deprecated patterns.
 ## Context Block (paste this at the start of every AI conversation)
 
 ```
-I am building StreamAI — a full-stack AI-powered video learning platform.
+I am building LearnAI — a full-stack AI-powered video learning platform.
 
 EXACT VERSIONS (critical — do not suggest alternatives):
 - Next.js 16.2.1 (App Router, Turbopack)
@@ -62,7 +62,7 @@ DO NOT:
 
 ### For ConceptAI Visual Explainer
 ```
-I need to build the ConceptAI visual explanation system for StreamAI.
+I need to build the ConceptAI visual explanation system for LearnAI.
 [paste context block above]
 
 The existing AIChatSidebar.jsx uses useChat from @ai-sdk/react.
@@ -80,7 +80,7 @@ as a separate component — it does NOT replace the chat.
 
 ### For API Routes
 ```
-I need to build [route name] for StreamAI.
+I need to build [route name] for LearnAI.
 [paste context block above]
 
 This route needs to:
@@ -99,7 +99,7 @@ const groq = createOpenAI({
 
 ### For React Components
 ```
-I need to build [component name] for StreamAI.
+I need to build [component name] for LearnAI.
 [paste context block above]
 
 This is a Client Component ("use client").
@@ -117,7 +117,7 @@ Styling rules:
 
 ### For Database Changes
 ```
-I need to update the StreamAI database schema.
+I need to update the LearnAI database schema.
 [paste context block above]
 
 CURRENT schema models (already exist): User, Content, Subscription,

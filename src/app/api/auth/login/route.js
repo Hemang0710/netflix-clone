@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import prisma from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { checkAccountLockout, recordFailedLogin, clearFailedLogins } from "@/lib/accountLockout";
 
 export async function POST (request){
     //Rate limit check FIRST - before any DB queries
@@ -19,13 +20,22 @@ export async function POST (request){
     }
     try {
         const body = await request.json()
-        const {email,password} = body 
+        const {email,password} = body
 
         if(!email || !password) {
             return NextResponse.json (
                 {success : false, message: "Email and password are required"},
                 {status: 400}
-            
+
+            )
+        }
+
+        // Check if account is locked
+        const lockoutStatus = await checkAccountLockout(email)
+        if (lockoutStatus.locked) {
+            return NextResponse.json(
+                {success: false, message: lockoutStatus.message},
+                {status: 429}
             )
         }
 
@@ -48,11 +58,21 @@ export async function POST (request){
     const passwordMatch = await bcrypt.compare(password, user.password)
 
     if(!passwordMatch){
+        // Record failed login attempt
+        const isLocked = await recordFailedLogin(email)
         return NextResponse.json(
-            {success:false, message: "Invalid email or password"},
+            {
+                success:false,
+                message: isLocked
+                    ? "Too many failed attempts. Account locked for 15 minutes."
+                    : "Invalid email or password"
+            },
             {status:401}
         )
     }
+
+    // Clear failed login attempts on successful login
+    await clearFailedLogins(user.id)
 
     //Create JWT token
     const token = jwt.sign(

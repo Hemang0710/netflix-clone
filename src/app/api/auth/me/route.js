@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
-import EmailForm from "@/components/EmailForm";
+import EmailForm from "@/components/auth/EmailForm";
 
 export async function GET() {
     try{

@@ -1,4 +1,4 @@
-import StudyPlanView from '@/components/StudyPlanView';
+import StudyPlanView from '@/components/learning/StudyPlanView';
 
 export const metadata = {
   title: 'Study Plan - LearnAI',

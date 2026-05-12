@@ -1,5 +1,5 @@
 import Link from "next/link"
-import EmailForm from "@/components/EmailForm"
+import EmailForm from "@/components/auth/EmailForm"
 
 const FEATURES = [
   {

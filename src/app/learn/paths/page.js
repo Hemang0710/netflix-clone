@@ -1,4 +1,4 @@
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/layout/Navbar"
 import prisma from "@/lib/prisma"
 import Link from "next/link"
 import Image from "next/image"

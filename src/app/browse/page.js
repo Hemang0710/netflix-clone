@@ -1,5 +1,5 @@
-import Navbar from "@/components/Navbar"
-import ContentRow from "@/components/ContentRow"
+import Navbar from "@/components/layout/Navbar"
+import ContentRow from "@/components/content/ContentRow"
 import Link from "next/link"
 import Image from "next/image"
 import { getCurrentUser } from "@/lib/auth"

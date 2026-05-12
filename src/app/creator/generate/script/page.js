@@ -1,5 +1,5 @@
-import Navbar from "@/components/Navbar"
-import ScriptGenerator from "@/components/ScriptGenerator"
+import Navbar from "@/components/layout/Navbar"
+import ScriptGenerator from "@/components/ai/ScriptGenerator"
 import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"

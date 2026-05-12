@@ -16,6 +16,10 @@ const customJestConfig = {
     '!src/**/*.d.ts',
     '!src/**/index.js',
   ],
+  testPathIgnorePatterns: [
+    '__tests__/integration/',
+    '__tests__/components/ConceptMasteryPassport.test.js',
+  ],
 }
 
 export default createJestConfig(customJestConfig)

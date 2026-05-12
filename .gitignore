@@ -36,3 +36,21 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Documentation files (internal/setup docs)
+SETUP_GUIDE.md
+SETUP_SUMMARY.md
+IMMEDIATE_ACTIONS.md
+FINAL_SUMMARY.md
+GITHUB_ACTIONS_SETUP.md
+SENDGRID_SETUP.md
+PLATFORM_POLISH_IMPLEMENTATION.md
+OUTSTANDING_ITEMS.md
+CREATOR_INTELLIGENCE_SETUP.md
+CREATOR_INTELLIGENCE_COMPLETE.md
+NAVIGATION_INTEGRATION.md
+
+# Keep docs structure but ignore internal docs
+docs/pwa/
+docs/features/
+docs/implementation/

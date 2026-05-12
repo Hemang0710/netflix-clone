@@ -1,3 +1,5 @@
+"use server"
+
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
@@ -15,4 +17,12 @@ export async function getCurrentUser(){
     catch {
         return null
     }
+}
+
+export async function verifyAuth() {
+    const user = await getCurrentUser()
+    if (!user) {
+        throw new Error("Unauthorized")
+    }
+    return user
 }

@@ -1,6 +1,8 @@
 import { WatchlistProvider } from "@/context/WatchlistContext";
-import PWAInstall from "@/components/PWAInstall";
-import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import PWAInstall from "@/components/pwa/PWAInstall";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
+import ToastProvider from "@/components/Toast/ToastProvider";
+import SentryWrapper from "@/components/Sentry/SentryWrapper";
 import "./globals.css"
 
 export const metadata = {
@@ -23,6 +25,8 @@ export default function RootLayout ({ children }){
     <html lang="en">
       <body>
         <WatchlistProvider>
+          <SentryWrapper />
+          <ToastProvider />
           <ServiceWorkerRegister />
           <PWAInstall />
           {children}

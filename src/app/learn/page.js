@@ -1,5 +1,13 @@
-import Navbar from "@/components/Navbar"
-import LearningHeatmap from "@/components/LearningHeatmap"
+import Navbar from "@/components/layout/Navbar"
+import LearningHeatmap from "@/components/learning/LearningHeatmap"
+import DailyReviewSession from "@/components/learning/DailyReviewSession"
+import ConceptMasteryList from "@/components/knowledge/ConceptMasteryList"
+import ForgettingCurveChart from "@/components/learning/ForgettingCurveChart"
+import KnowledgeMap from "@/components/knowledge/KnowledgeMap"
+import ConceptMasteryPassport from "@/components/knowledge/ConceptMasteryPassport"
+import LearningStreakTracker from "@/components/learning/LearningStreakTracker"
+import ConceptRelationshipGraph from "@/components/knowledge/ConceptRelationshipGraph"
+import WeakSpotsDashboard from "@/components/knowledge/WeakSpotsDashboard"
 import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
@@ -9,7 +17,7 @@ export default async function LearnPage() {
   const user = await getCurrentUser()
   if (!user) redirect("/login")
 
-  const [dueCards, recentProgress, credits] = await Promise.all([
+  const [dueCards, recentProgress, credits, dueConceptsCount] = await Promise.all([
     prisma.flashcard.count({
       where: { userId: user.userId, dueDate: { lte: new Date() } },
     }).catch(() => 0),
@@ -20,6 +28,9 @@ export default async function LearnPage() {
       include: { content: { select: { id: true, title: true, thumbnailUrl: true, genre: true } } },
     }),
     prisma.userCredits.findUnique({ where: { userId: user.userId } }).catch(() => null),
+    prisma.conceptMastery.count({
+      where: { userId: user.userId, dueDate: { lte: new Date() } },
+    }).catch(() => 0),
   ])
 
   const totalWatched = await prisma.watchProgress.count({ where: { userId: user.userId, timestamp: { gt: 30 } } })
@@ -61,6 +72,11 @@ export default async function LearnPage() {
           ))}
         </div>
 
+        {/* Daily Review Section */}
+        <div className="mb-8">
+          <DailyReviewSession dueCount={dueConceptsCount} />
+        </div>
+
         {/* Flashcard due notice */}
         {dueCards > 0 && (
           <div className="mb-6 p-4 rounded-2xl bg-amber-500/8 border border-amber-500/20 flex items-center justify-between gap-4">
@@ -86,6 +102,41 @@ export default async function LearnPage() {
         <div className="mb-8">
           <h2 className="text-lg font-bold mb-4">Learning Activity</h2>
           <LearningHeatmap />
+        </div>
+
+        {/* Concept Mastery */}
+        <div className="mb-8">
+          <ConceptMasteryList />
+        </div>
+
+        {/* Forgetting Curve */}
+        <div className="mb-8">
+          <ForgettingCurveChart />
+        </div>
+
+        {/* Personal Knowledge Map */}
+        <div className="mb-8">
+          <KnowledgeMap />
+        </div>
+
+        {/* Concept Mastery Passport */}
+        <div className="mb-8">
+          <ConceptMasteryPassport />
+        </div>
+
+        {/* Learning Streak Tracker */}
+        <div className="mb-8">
+          <LearningStreakTracker />
+        </div>
+
+        {/* Concept Relationship Graph */}
+        <div className="mb-8">
+          <ConceptRelationshipGraph />
+        </div>
+
+        {/* Weak Spots Dashboard */}
+        <div className="mb-8">
+          <WeakSpotsDashboard />
         </div>
 
         {/* Recent lessons */}

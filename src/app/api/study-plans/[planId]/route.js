@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import prisma from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(request, { params }) {
   try {
-    const session = await getSession();
-    if (!session?.user?.id) {
+    const user = await getCurrentUser();
+    if (!user?.userId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -37,7 +37,7 @@ export async function GET(request, { params }) {
     }
 
     // Verify ownership
-    if (plan.userId !== session.user.id) {
+    if (plan.userId !== user.userId) {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 
@@ -69,7 +69,7 @@ export async function PUT(request, { params }) {
       where: { id: Number(planId) }
     });
 
-    if (!plan || plan.userId !== session.user.id) {
+    if (!plan || plan.userId !== user.userId) {
       return NextResponse.json({ success: false, message: 'Forbidden' }, { status: 403 });
     }
 

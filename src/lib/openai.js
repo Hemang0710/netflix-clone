@@ -33,6 +33,8 @@ const aiClient = new OpenAI({
 
 const GROQ_MAX_BYTES = 25 * 1024 * 1024 // 25MB Groq limit
 
+export { aiClient }
+
 export async function transcribesAudio(audioUrl) {
     try {
         const response = await fetch(audioUrl)

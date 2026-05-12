@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { getSession } from '@/lib/auth';
+import prisma from '@/lib/prisma';
+import { getCurrentUser } from '@/lib/auth';
 import { generateStudyPlan } from '@/lib/planGenerator';
 
 export async function POST(request) {
   try {
-    const session = await getSession();
-    if (!session?.user?.id) {
+    const user = await getCurrentUser();
+    if (!user?.userId) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
 
@@ -22,7 +22,7 @@ export async function POST(request) {
 
     // Generate schedule via AI
     const { schedule, tasks, reasoning } = await generateStudyPlan({
-      userId: session.user.id,
+      userId: user.userId,
       hoursPerWeek,
       goal,
       targetCareer,
@@ -32,7 +32,7 @@ export async function POST(request) {
     // Save plan
     const plan = await prisma.studyPlan.create({
       data: {
-        userId: session.user.id,
+        userId: user.userId,
         hoursPerWeek,
         goal,
         targetCareer,
@@ -79,7 +79,7 @@ export async function GET(request) {
     // Get all active plans for user
     const plans = await prisma.studyPlan.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.userId,
         isActive: true
       },
       orderBy: { createdAt: 'desc' },

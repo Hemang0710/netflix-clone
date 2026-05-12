@@ -1,10 +1,12 @@
 import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation"
-import Navbar from "@/components/Navbar"
-import WatchPageClient from "@/components/WatchPageClient"
+import { getCurrentUser } from "@/lib/auth"
+import Navbar from "@/components/layout/Navbar"
+import WatchPageClient from "@/components/video/WatchPageClient"
 
 export default async function WatchPage({ params }) {
   const { id } = await params
+  const user = await getCurrentUser()
 
   const content = await prisma.content.findUnique({
     where: { id: Number(id) },
@@ -35,6 +37,7 @@ export default async function WatchPage({ params }) {
         content={content}
         chapters={chapters}
         creatorName={creatorName}
+        userId={user?.userId || null}
       />
     </main>
   )

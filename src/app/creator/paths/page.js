@@ -1,9 +1,9 @@
 import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { redirect } from "next/navigation"
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/layout/Navbar"
 import Link from "next/link"
-import PathManagerClient from "@/components/PathManagerClient"
+import PathManagerClient from "@/components/creator/PathManagerClient"
 
 export default async function CreatorPathsPage() {
   const user = await getCurrentUser()

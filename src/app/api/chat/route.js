@@ -1,9 +1,11 @@
 // src/app/api/chat/route.js
 import { createOpenAI } from "@ai-sdk/openai"
 import { streamText } from "ai"
+import { createHash } from "crypto"
 import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { checkRateLimit } from "@/lib/rateLimit"
+import { getOrGenerateTranscript } from "@/lib/transcriptService"
 
 const groq = createOpenAI({
   apiKey: process.env.GROQ_API_KEY,
@@ -49,37 +51,74 @@ export async function POST(request) {
 
     console.log("💬 Chat request:", { contentId, messageCount: messages.length })
 
-    // Get transcript
+    // Get transcript with fallback strategies
     let transcript = ""
     let videoTitle = ""
+    let transcriptSource = "none"
 
     if (contentId) {
+      const transcriptResult = await getOrGenerateTranscript(Number(contentId))
+      
+      if (transcriptResult.success) {
+        transcript = transcriptResult.transcript.slice(0, 6000)
+        transcriptSource = transcriptResult.source
+        console.log(`📄 Transcript retrieved via ${transcriptResult.source}`, {
+          length: transcript.length,
+          isMinimalContext: transcriptResult.isMinimalContext
+        })
+      } else {
+        console.warn(`⚠️ Failed to get transcript, using minimal context:`, transcriptResult.error)
+        transcript = transcriptResult.transcript
+      }
+
+      // Get video title for context
       const content = await prisma.content.findUnique({
         where: { id: Number(contentId) },
-        select: { transcript: true, title: true },
+        select: { title: true },
       })
-
-      if (content?.transcript) {
-        transcript = content.transcript.slice(0, 6000)
-        videoTitle = content.title
-        console.log("📄 Transcript found, length:", transcript.length)
-      } else {
-        console.log("⚠️ No transcript found for content:", contentId)
-      }
+      videoTitle = content?.title || "Unknown Video"
     }
 
     const systemPrompt = transcript
       ? `You are an AI learning assistant for the video "${videoTitle}".
-You have access to the full transcript. Use it to answer questions accurately.
+You have access to content information about this video. Use it to answer questions accurately.
 
-TRANSCRIPT:
+CONTENT CONTEXT:
 ${transcript}
 
 Rules:
 - Keep answers concise (2-4 paragraphs).
-- If the user says they're confused or don't understand without specifying what, assume they mean the most recent or complex concept in the transcript and explain that — never ask "which part?".
-- If something isn't in the transcript, say so.`
+- If the user says they're confused or don't understand without specifying what, assume they mean the most recent or complex concept and explain that — never ask "which part?".
+- If something isn't in the provided context, supplement with your general knowledge.
+- Be helpful even if full transcript is unavailable.`
       : `You are a helpful AI assistant for a video learning platform. Be concise and helpful. If the user says they're confused, explain the most relevant concept you can from context — never ask them to clarify which part.`
+
+    // Log question asynchronously (fire-and-forget)
+    if (contentId && messages.length > 0) {
+      const userMessage = messages[messages.length - 1]
+      if (userMessage.role === 'user' && userMessage.content) {
+        Promise.resolve().then(async () => {
+          try {
+            const questionHash = createHash('sha256')
+              .update(userMessage.content.toLowerCase().trim())
+              .digest('hex')
+
+            await prisma.sharedQuestion.upsert({
+              where: { contentId_questionHash: { contentId: Number(contentId), questionHash } },
+              update: { count: { increment: 1 } },
+              create: {
+                contentId: Number(contentId),
+                questionHash,
+                sampleText: userMessage.content.substring(0, 500),
+                count: 1,
+              },
+            })
+          } catch (err) {
+            console.error('Failed to log question:', err)
+          }
+        })
+      }
+    }
 
     console.log("🤖 Calling Groq API...")
 

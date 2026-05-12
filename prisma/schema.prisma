@@ -12,6 +12,12 @@ model User {
   id                       Int                @id @default(autoincrement())
   email                    String             @unique
   password                 String?
+  emailVerified            Boolean            @default(false)
+  emailVerificationToken   String?            @unique
+  passwordResetToken       String?            @unique
+  passwordResetExpiresAt   DateTime?
+  failedLoginAttempts      Int                @default(0)
+  lockedUntil              DateTime?
   role                     String             @default("viewer")
   createdAt                DateTime           @default(now())
   profile                  Profile?
@@ -37,6 +43,68 @@ model User {
   studyGroupMessages       StudyGroupMessage[]
   studyPlans               StudyPlan[]
   microLessonProgresses    MicroLessonProgress[]
+  conceptMasteries         ConceptMastery[]
+  reviewSessions           ReviewSession[]
+  checkpoints              ComprehensionCheckpoint[]
+  explanationFeedbacks     ExplanationFeedback[]
+  activeLearner            ActiveLearner[]
+  buddyRequestsSent        StudyBuddySession[]      @relation("BuddyRequester")
+  buddyRequestsReceived    StudyBuddySession[]      @relation("BuddyReceiver")
+  partnerRequestsSent      AccountabilityPartner[]  @relation("PartnerRequester")
+  partnerRequestsReceived  AccountabilityPartner[]  @relation("PartnerReceiver")
+  checkIns                 PartnerCheckIn[]
+  notifications            Notification[]
+  hostedRooms              StudyGroup[]             @relation("RoomHost")
+}
+
+model ConceptMastery {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  contentId    Int?
+  concept      String
+  source       String    @default("chapter")
+  interval     Int       @default(1)
+  repetitions  Int       @default(0)
+  easeFactor   Float     @default(2.5)
+  dueDate      DateTime  @default(now())
+  masteryScore Float     @default(0)
+  lastScore    Float?
+  reviewCount  Int       @default(0)
+  lastReviewAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      Content?  @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, contentId, concept])
+}
+
+model ReviewSession {
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  startedAt        DateTime  @default(now())
+  completedAt      DateTime?
+  conceptsReviewed Int       @default(0)
+  avgScore         Float?
+  durationSeconds  Int?
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ComprehensionCheckpoint {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  contentId    Int
+  chapterIndex Int
+  chapterTitle String?
+  passed       Boolean   @default(false)
+  score        Float?
+  attempts     Int       @default(0)
+  unlockedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId, chapterIndex])
 }
 
 model LearningInsight {
@@ -96,12 +164,17 @@ model ExternalQuiz {
 }
 
 model Profile {
-  id        Int     @id @default(autoincrement())
-  userId    Int     @unique
-  user      User    @relation(fields: [userId], references: [id])
-  name      String
-  avatarUrl String?
-  bio       String?
+  id                 Int     @id @default(autoincrement())
+  userId             Int     @unique
+  user               User    @relation(fields: [userId], references: [id])
+  name               String
+  avatarUrl          String?
+  bio                String?
+  username           String? @unique
+  isPublic           Boolean @default(false)
+  showHeatmap        Boolean @default(true)
+  showBadges         Boolean @default(true)
+  showCurrentVideos  Boolean @default(true)
 }
 
 model Content {
@@ -134,6 +207,12 @@ model Content {
   studyGroups   StudyGroup[]
   studyTasks    StudyTask[]
   microLessons  MicroLesson[]
+  conceptMasteries ConceptMastery[]
+  checkpoints      ComprehensionCheckpoint[]
+  explanationFeedbacks ExplanationFeedback[]
+  activeLearners        ActiveLearner[]
+  buddySessions         StudyBuddySession[]
+  sharedQuestions       SharedQuestion[]
 }
 
 model Quiz {
@@ -369,6 +448,13 @@ model StudyGroup {
   createdAt           DateTime         @default(now())
   expiresAt           DateTime?
 
+  isRoom              Boolean          @default(false)
+  hostUserId          Int?
+  host                User?            @relation("RoomHost", fields: [hostUserId], references: [id], onDelete: SetNull)
+  roomTimestamp       Float            @default(0)
+  roomState           String           @default("paused")
+  roomStateAt         DateTime         @default(now())
+
   members             StudyGroupMember[]
   messages            StudyGroupMessage[]
 }
@@ -501,4 +587,108 @@ model MicroLessonProgress {
   createdAt             DateTime              @default(now())
 
   @@unique([userId, microLessonId])
+}
+
+model ExplanationFeedback {
+  id                    Int                   @id @default(autoincrement())
+  userId                Int
+  user                  User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contentId             Int?
+  content               Content?              @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  chapterTitle          String?               // e.g., "Module 2: Authentication"
+  explainerType         String                // "diagram" | "analogy" | "walkthrough"
+
+  helpfulnessScore      Int                   @default(0) // 0-5, where 0=not helpful, 5=very helpful
+  timeSpentSeconds      Int                   @default(0) // how long user viewed this explanation
+
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+}
+
+model ActiveLearner {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentId   Int
+  content     Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  lastSeen    DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, contentId])
+  @@index([contentId])
+}
+
+model StudyBuddySession {
+  id          Int       @id @default(autoincrement())
+  contentId   Int
+  content     Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  requesterId Int
+  requester   User      @relation("BuddyRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId  Int
+  receiver    User      @relation("BuddyReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      String    @default("pending")
+  startedAt   DateTime?
+  endedAt     DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([contentId])
+  @@index([requesterId])
+  @@index([receiverId])
+}
+
+model SharedQuestion {
+  id           Int      @id @default(autoincrement())
+  contentId    Int
+  content      Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  concept      String?
+  questionHash String
+  count        Int      @default(1)
+  sampleText   String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([contentId, questionHash])
+  @@index([contentId])
+}
+
+model AccountabilityPartner {
+  id          Int       @id @default(autoincrement())
+  requesterId Int
+  requester   User      @relation("PartnerRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  receiverId  Int
+  receiver    User      @relation("PartnerReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  acceptedAt  DateTime?
+  checkIns    PartnerCheckIn[]
+
+  @@unique([requesterId, receiverId])
+  @@index([receiverId])
+}
+
+model PartnerCheckIn {
+  id          Int       @id @default(autoincrement())
+  partnerId   Int
+  partnership AccountabilityPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkedInAt DateTime  @default(now())
+  note        String?
+
+  @@index([partnerId])
+  @@index([userId])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  payload   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
 }

@@ -1,10 +1,10 @@
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/layout/Navbar"
 import prisma from "@/lib/prisma"
 import { getCurrentUser } from "@/lib/auth"
 import { notFound } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import PathEnrollButton from "@/components/PathEnrollButton"
+import PathEnrollButton from "@/components/paths/PathEnrollButton"
 
 export default async function LearningPathPage({ params }) {
   const { id } = await params

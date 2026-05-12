@@ -1,9 +1,11 @@
 // src/app/api/auth/register/route.js
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 import prisma from "@/lib/prisma"
 import { checkRateLimit } from "@/lib/rateLimit"
 import { registerSchema, validateBody } from "@/lib/schemas"
+import { sendVerificationEmail } from "@/lib/email"
 
 export async function POST(request) {
   // 1. Rate limit
@@ -40,9 +42,15 @@ export async function POST(request) {
 
     // 4. Hash and create user + seed credits atomically
     const hashedPassword = await bcrypt.hash(password, 12)
+    const verificationToken = crypto.randomBytes(32).toString('hex')
+
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
-        data: { email, password: hashedPassword },
+        data: {
+          email,
+          password: hashedPassword,
+          emailVerificationToken: verificationToken,
+        },
       })
       await tx.userCredits.create({
         data: { userId: newUser.id, credits: 10 },
@@ -50,8 +58,16 @@ export async function POST(request) {
       return newUser
     })
 
+    // Send verification email
+    await sendVerificationEmail(user.email, verificationToken)
+
     return NextResponse.json(
-      { success: true, message: "Account created", userId: user.id },
+      {
+        success: true,
+        message: "Account created. Check your email to verify.",
+        userId: user.id,
+        requiresEmailVerification: true
+      },
       { status: 201 }
     )
 

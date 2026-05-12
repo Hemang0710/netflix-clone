@@ -1,7 +1,7 @@
 import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 import { notFound, redirect } from "next/navigation"
-import Navbar from "@/components/Navbar"
+import Navbar from "@/components/layout/Navbar"
 import Link from "next/link"
 
 export default async function CertificatePage({ params }) {

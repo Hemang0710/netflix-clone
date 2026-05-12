@@ -1,0 +1,75 @@
+module.exports = {
+  activeLearner: {
+    upsert: jest.fn(),
+    count: jest.fn(),
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  studyBuddySession: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  sharedQuestion: {
+    upsert: jest.fn(),
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+  },
+  accountabilityPartner: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  partnerCheckIn: {
+    create: jest.fn(),
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+  },
+  notification: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  studyGroup: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  },
+  studyGroupMember: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    delete: jest.fn(),
+  },
+  profile: {
+    findFirst: jest.fn(),
+    findUnique: jest.fn(),
+    upsert: jest.fn(),
+    update: jest.fn(),
+  },
+  watchProgress: {
+    findMany: jest.fn(),
+    findUnique: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  },
+  user: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+  },
+  content: {
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+  },
+}

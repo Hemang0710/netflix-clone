@@ -1,5 +1,5 @@
-import PricingPlans from "@/components/PricingPlans"
-import Navbar from "@/components/Navbar"
+import PricingPlans from "@/components/subscription/PricingPlans"
+import Navbar from "@/components/layout/Navbar"
 import { getCurrentUser } from "@/lib/auth"
 import prisma from "@/lib/prisma"
 

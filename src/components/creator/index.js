@@ -1,0 +1,9 @@
+export { default as CreatorDashboard } from './CreatorDashboard';
+export { default as ConfusionHeatmap } from './ConfusionHeatmap';
+export { default as DropoffAnalytics } from './DropoffAnalytics';
+export { default as ContentGapDetector } from './ContentGapDetector';
+export { default as ScriptWriter } from './ScriptWriter';
+export { default as ThumbnailGenerator } from './ThumbnailGenerator';
+export { default as CourseOutlineGenerator } from './CourseOutlineGenerator';
+export { default as DeleteVideoButton } from './DeleteVideoButton';
+export { default as PathManagerClient } from './PathManagerClient';

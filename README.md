@@ -288,8 +288,8 @@ See `prisma/schema.prisma` for full schema.
 ## 📞 Support
 
 - **Issues**: [GitHub Issues](https://github.com/yourusername/stream-ai/issues)
-- **Email**: support@learnaistudio.com
-- **Website**: [learnaistudio.com](https://learnaistudio.com)
+- **Email**: hemangpatel0710@gmail.com
+- **Website**: [learnai.com](https://vercel.com/hemang-patels-projects-e7360993/stream_ai)
 
 ---
 

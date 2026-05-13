@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
-import QRCode from 'qrcode.react'
+import { QRCodeCanvas as QRCode } from 'qrcode.react'
 import { Award, Share2, Copy } from 'lucide-react'
 import Link from 'next/link'
 

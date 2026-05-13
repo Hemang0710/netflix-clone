@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Loader2, Award, Share2, Copy, Check } from 'lucide-react'
-import QRCode from 'qrcode.react'
+import { QRCodeCanvas as QRCode } from 'qrcode.react'
 import { getMasteryTier } from '@/lib/masteryHelpers'
 
 export default function ConceptMasteryPassport() {

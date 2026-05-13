@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import QRCode from "qrcode.react";
+import { QRCodeCanvas as QRCode } from "qrcode.react";
 
 export default function BadgeEarnedModal({ badge, issuance, onClose }) {
   const [copied, setCopied] = useState(false);

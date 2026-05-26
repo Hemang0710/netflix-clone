@@ -30,7 +30,7 @@ export async function GET(request) {
 
         const tokens = await tokenResponse.json()
 
-        if(!token.access_token) {
+        if(!tokens.access_token) {
             throw new Error("No access token received from Google")
         }
 
@@ -38,7 +38,7 @@ export async function GET(request) {
         const userInfoResponse = await fetch(
             "https://www.googleapis.com/oauth2/v2/userinfo",
             {
-                headers: {Authorization: `Bearer ${token.access_token}`},
+                headers: {Authorization: `Bearer ${tokens.access_token}`},
             }
         )
 

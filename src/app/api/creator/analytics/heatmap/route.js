@@ -6,12 +6,13 @@ export async function GET(req) {
   try {
     const user = await verifyAuth(req);
     const { searchParams } = new URL(req.url);
-    const contentId = searchParams.get('contentId');
+    const contentIdStr = searchParams.get('contentId');
 
-    if (!contentId) {
+    if (!contentIdStr) {
       return Response.json({ error: 'contentId required' }, { status: 400 });
     }
 
+    const contentId = parseInt(contentIdStr);
     const content = await prisma.content.findUnique({
       where: { id: contentId },
       select: { creatorId: true },

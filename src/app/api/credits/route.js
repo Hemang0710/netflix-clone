@@ -22,14 +22,25 @@ export async function GET(request) {
     }
 
     try {
+      // Verify user exists in database
+      const userInDb = await prisma.user.findUnique({
+        where: { id: Number(user.userId) },
+        select: { id: true },
+      })
+
+      if (!userInDb) {
+        // User doesn't exist yet, return 0 credits
+        return NextResponse.json({ success: true, credits: 0 })
+      }
+
       const userCredits = await prisma.userCredits.findUnique({
-        where: { userId: user.userId },
+        where: { userId: Number(user.userId) },
         select: { credits: true },
       })
 
       if (!userCredits) {
         const created = await prisma.userCredits.create({
-          data: { userId: user.userId, credits: 0 },
+          data: { userId: Number(user.userId), credits: 0 },
         })
         return NextResponse.json({ success: true, credits: created.credits })
       }

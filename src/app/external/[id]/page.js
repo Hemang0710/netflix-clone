@@ -40,8 +40,8 @@ export default async function ExternalWatchPage({ params }) {
 
   if (!content) notFound()
 
-  // Only owner or authenticated users can view
-  if (content.userId !== Number(user?.userId || 0) && !user) {
+  // Only authenticated users can view external content
+  if (!user) {
     return notFound()
   }
 

@@ -46,28 +46,28 @@ export default function ContentGapDetector({ contentId }) {
     }
   };
 
-  if (loading) return <div className="p-4">Loading content gap analysis...</div>;
-  if (error) return <div className="p-4 text-red-500">Error: {error}</div>;
-  if (!gaps) return <div className="p-4">No gap data available</div>;
+  if (loading) return <div className="p-4 text-slate-400">Loading content gap analysis...</div>;
+  if (error) return <div className="p-4 text-red-400">Error: {error}</div>;
+  if (!gaps) return <div className="p-4 text-slate-400">No gap data available</div>;
 
   const priorityColors = {
-    high: 'bg-red-50 border-l-4 border-red-500',
-    medium: 'bg-yellow-50 border-l-4 border-yellow-500',
-    low: 'bg-green-50 border-l-4 border-green-500',
+    high: 'bg-red-500/15 border-l-4 border-red-500',
+    medium: 'bg-yellow-500/15 border-l-4 border-yellow-500',
+    low: 'bg-emerald-500/15 border-l-4 border-emerald-500',
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-4">Content Gap Detector</h2>
+    <div className="glass-card rounded-2xl shadow-md p-6 border border-white/10">
+      <h2 className="text-2xl font-bold mb-6 text-white">Content Gap Detector</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded">
-          <p className="text-sm text-gray-600">Total Gaps Identified</p>
-          <p className="text-3xl font-bold">{gaps.totalGapsIdentified}</p>
+        <div className="bg-indigo-500/15 border border-indigo-500/20 p-4 rounded-lg">
+          <p className="text-sm text-slate-400">Total Gaps Identified</p>
+          <p className="text-3xl font-bold text-white mt-1">{gaps.totalGapsIdentified}</p>
         </div>
-        <div className="bg-purple-50 p-4 rounded">
-          <p className="text-sm text-gray-600">Status</p>
-          <p className="text-lg font-semibold text-purple-700">
+        <div className="bg-purple-500/15 border border-purple-500/20 p-4 rounded-lg">
+          <p className="text-sm text-slate-400">Status</p>
+          <p className="text-lg font-semibold text-purple-300 mt-1">
             {gaps.recommendation}
           </p>
         </div>
@@ -75,28 +75,28 @@ export default function ContentGapDetector({ contentId }) {
 
       {gaps.topGaps.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">Top Content Gaps</h3>
+          <h3 className="text-lg font-semibold mb-4 text-white">Top Content Gaps</h3>
           <div className="space-y-3">
             {gaps.topGaps.map((gap, idx) => (
               <div
                 key={idx}
-                className={`p-4 rounded ${priorityColors[gap.priority]}`}
+                className={`p-4 rounded-lg ${priorityColors[gap.priority]}`}
               >
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-gray-800">{gap.concept}</h4>
+                  <h4 className="font-semibold text-white">{gap.concept}</h4>
                   <span
                     className={`text-xs font-bold px-2 py-1 rounded ${
                       gap.priority === 'high'
-                        ? 'bg-red-200 text-red-800'
+                        ? 'bg-red-500/25 text-red-300'
                         : gap.priority === 'medium'
-                        ? 'bg-yellow-200 text-yellow-800'
-                        : 'bg-green-200 text-green-800'
+                        ? 'bg-yellow-500/25 text-yellow-300'
+                        : 'bg-emerald-500/25 text-emerald-300'
                     }`}
                   >
                     {gap.priority.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-slate-400">
                   Asked for by {gap.timesAskedFor} viewer{gap.timesAskedFor !== 1 ? 's' : ''}
                 </p>
               </div>
@@ -107,12 +107,12 @@ export default function ContentGapDetector({ contentId }) {
 
       {gaps.totalGapsIdentified > gaps.topGaps.length && (
         <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-4">All Identified Gaps</h3>
+          <h3 className="text-lg font-semibold mb-4 text-white">All Identified Gaps</h3>
           <div className="max-h-64 overflow-y-auto space-y-2">
             {gaps.allGaps.map((gap, idx) => (
-              <div key={idx} className="flex justify-between items-center bg-gray-50 p-3 rounded">
-                <span className="text-sm font-medium">{gap.concept}</span>
-                <span className="text-xs text-gray-600">
+              <div key={idx} className="flex justify-between items-center bg-white/5 border border-white/10 p-3 rounded-lg">
+                <span className="text-sm font-medium text-slate-300">{gap.concept}</span>
+                <span className="text-xs text-slate-400">
                   {gap.timesAskedFor} request{gap.timesAskedFor !== 1 ? 's' : ''}
                 </span>
               </div>
@@ -125,16 +125,16 @@ export default function ContentGapDetector({ contentId }) {
         <button
           onClick={handleAIAnalysis}
           disabled={analyzing}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded mb-6 transition"
+          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-600 text-white font-semibold py-2.5 px-4 rounded-lg mb-6 transition glow-indigo-sm"
         >
           {analyzing ? 'Analyzing...' : 'Get AI Analysis & Recommendations'}
         </button>
       )}
 
       {analysis && (
-        <div className="bg-indigo-50 p-4 rounded border-l-4 border-indigo-500">
-          <h4 className="font-semibold text-gray-800 mb-2">AI Analysis & Recommendations</h4>
-          <div className="text-sm text-gray-700 whitespace-pre-wrap">
+        <div className="bg-indigo-500/15 p-4 rounded-lg border-l-4 border-indigo-500">
+          <h4 className="font-semibold text-indigo-300 mb-2">AI Analysis & Recommendations</h4>
+          <div className="text-sm text-slate-300 whitespace-pre-wrap">
             {analysis.analysis}
           </div>
         </div>

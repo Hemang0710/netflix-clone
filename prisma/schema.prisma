@@ -53,6 +53,10 @@ model User {
   checkIns                 PartnerCheckIn[]
   notifications            Notification[]
   hostedRooms              StudyGroup[]             @relation("RoomHost")
+  learningGoals            LearningGoal[]
+  learningMetrics          LearningMetric[]
+  studyStreak              StudyStreak?
+  highlights               Highlight[]
 }
 
 model ConceptMastery {
@@ -211,6 +215,7 @@ model Content {
   activeLearners        ActiveLearner[]
   buddySessions         StudyBuddySession[]
   sharedQuestions       SharedQuestion[]
+  highlights            Highlight[]
 }
 
 model Quiz {
@@ -689,4 +694,79 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, read])
+}
+
+model LearningGoal {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title             String
+  description       String?
+  category          String    // "subject" | "completion_rate" | "time_spent" | "quiz_score"
+  target            Float     // target value (e.g., 80 for 80%, 10 for 10 hours)
+  unit              String    // "percent" | "hours" | "minutes" | "videos" | "score"
+
+  startDate         DateTime
+  endDate           DateTime
+  period            String    // "weekly" | "monthly" | "custom"
+
+  currentProgress   Float     @default(0)
+  status            String    @default("active") // "active" | "completed" | "abandoned"
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([userId, period, status])
+}
+
+model LearningMetric {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  metricType        String    // "time_spent" | "videos_watched" | "quiz_score" | "concepts_mastered"
+  value             Float
+  unit              String
+
+  subject           String?   // optional topic/subject area
+  contentId         Int?
+
+  recordedAt        DateTime  @default(now())
+
+  @@index([userId, metricType, recordedAt])
+  @@index([userId, subject])
+}
+
+model StudyStreak {
+  id                Int       @id @default(autoincrement())
+  userId            Int       @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentStreak     Int       @default(0)
+  longestStreak     Int       @default(0)
+
+  lastActivityDate  DateTime  @default(now())
+  streakStartDate   DateTime  @default(now())
+
+  updatedAt         DateTime  @updatedAt
+}
+
+model Highlight {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  contentId         Int
+  content           Content   @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  text              String
+  startTime         Float?    // timestamp in video if applicable
+  color             String    @default("yellow") // yellow | green | blue | pink
+
+  summary           String?   // AI-generated summary
+
+  createdAt         DateTime  @default(now())
+
+  @@index([userId, contentId])
 }

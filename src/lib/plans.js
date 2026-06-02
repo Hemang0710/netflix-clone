@@ -3,7 +3,7 @@ export const PLANS = [
     id: "basic",
     name: "Learner",
     price: 6.99,
-    priceId: process.env.STRIPE_PRICE_BASIC,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_BASIC,
     features: [
       "Unlimited course access",
       "AI quiz generation",
@@ -16,7 +16,7 @@ export const PLANS = [
     id: "standard",
     name: "Pro Learner",
     price: 13.99,
-    priceId: process.env.STRIPE_PRICE_STANDARD,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_STANDARD,
     popular: true,
     features: [
       "Everything in Learner",
@@ -31,7 +31,7 @@ export const PLANS = [
     id: "premium",
     name: "Creator Pro",
     price: 22.99,
-    priceId: process.env.STRIPE_PRICE_PREMIUM,
+    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_PREMIUM,
     features: [
       "Everything in Pro Learner",
       "200 AI creator credits/month",

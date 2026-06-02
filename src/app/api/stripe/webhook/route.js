@@ -39,10 +39,10 @@ export async function POST(request) {
                 const planId = session.metadata.planId
 
                 // Get subscription details from Stripe
-                const subscribe = await stripe.subscriptions.retrieve(
+                const subscription = await stripe.subscriptions.retrieve(
                     session.subscription
                 )
-                
+
                 await prisma.subscription.upsert({
                     where: {userId},
                     update: {

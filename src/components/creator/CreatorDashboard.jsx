@@ -24,26 +24,26 @@ export default function CreatorDashboard({ contentId }) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+    <div className="min-h-screen bg-[#050508] py-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-6">
+        <div className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-3">
             Creator Intelligence Hub
           </h1>
-          <p className="text-gray-600">
+          <p className="text-slate-400 text-lg">
             Solve Content Quality Gaps with AI-Powered Analytics & Tools
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg">
-          <div className="border-b border-gray-200">
+        <div className="glass-card rounded-2xl shadow-lg border border-white/10">
+          <div className="border-b border-white/10">
             <div className="flex">
               <button
                 onClick={() => setActiveSection(TAB_SECTIONS.ANALYTICS)}
                 className={`flex-1 py-4 px-6 text-center font-semibold transition ${
                   activeSection === TAB_SECTIONS.ANALYTICS
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'text-indigo-400 border-b-2 border-indigo-500'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 📊 Analytics & Insights
@@ -52,8 +52,8 @@ export default function CreatorDashboard({ contentId }) {
                 onClick={() => setActiveSection(TAB_SECTIONS.AI_TOOLS)}
                 className={`flex-1 py-4 px-6 text-center font-semibold transition ${
                   activeSection === TAB_SECTIONS.AI_TOOLS
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-700 hover:text-gray-900'
+                    ? 'text-indigo-400 border-b-2 border-indigo-500'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 ✨ AI Creation Tools
@@ -65,7 +65,7 @@ export default function CreatorDashboard({ contentId }) {
             {activeSection === TAB_SECTIONS.ANALYTICS && (
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold mb-6 text-gray-900">
+                  <h2 className="text-2xl font-bold mb-6 text-white">
                     Content Performance Analytics
                   </h2>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -81,7 +81,7 @@ export default function CreatorDashboard({ contentId }) {
             {activeSection === TAB_SECTIONS.AI_TOOLS && (
               <div className="space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold mb-6 text-gray-900">
+                  <h2 className="text-2xl font-bold mb-6 text-white">
                     AI-Powered Creation Tools
                   </h2>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -96,15 +96,33 @@ export default function CreatorDashboard({ contentId }) {
           </div>
         </div>
 
-        <div className="mt-8 bg-linear-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-6 text-white">
-          <h3 className="text-xl font-bold mb-2">Creator Intelligence Features</h3>
-          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-            <li>✅ Confusion Heatmap - Identify viewer confusion points</li>
-            <li>✅ Dropoff Analytics - Analyze viewer retention rates</li>
-            <li>✅ Content Gap Detector - Find missing explanations</li>
-            <li>✅ AI Script Writer - Generate engaging video scripts</li>
-            <li>✅ AI Thumbnail Generator - Create professional thumbnails</li>
-            <li>✅ AI Course Outline - Structure complete courses</li>
+        <div className="mt-8 bg-linear-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg p-8 text-white border border-indigo-500/20">
+          <h3 className="text-xl font-bold mb-4">Creator Intelligence Features</h3>
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-white/90">
+            <li className="flex items-center gap-2">
+              <span className="text-emerald-400">✅</span>
+              <span>Confusion Heatmap - Identify viewer confusion points</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-emerald-400">✅</span>
+              <span>Dropoff Analytics - Analyze viewer retention rates</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-emerald-400">✅</span>
+              <span>Content Gap Detector - Find missing explanations</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-emerald-400">✅</span>
+              <span>AI Script Writer - Generate engaging video scripts</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-emerald-400">✅</span>
+              <span>AI Thumbnail Generator - Create professional thumbnails</span>
+            </li>
+            <li className="flex items-center gap-2">
+              <span className="text-emerald-400">✅</span>
+              <span>AI Course Outline - Structure complete courses</span>
+            </li>
           </ul>
         </div>
       </div>

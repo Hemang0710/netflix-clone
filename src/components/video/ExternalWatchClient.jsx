@@ -11,41 +11,77 @@ export default function ExternalWatchClient({ content, chapters, userProgress, u
   const playerRef = useRef(null)
   const [isReady, setIsReady] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [playerError, setPlayerError] = useState(null)
   const progressIntervalRef = useRef(null)
 
   // YouTube IFrame API integration
   useEffect(() => {
+    // Guard: ensure we have a video ID
+    if (!content?.externalId) {
+      console.warn('[YOUTUBE_PLAYER] Missing externalId:', content)
+      return
+    }
+
     // Load YouTube IFrame API script
     if (!window.YT) {
       const tag = document.createElement("script")
       tag.src = "https://www.youtube.com/iframe_api"
+      tag.async = true
       document.head.appendChild(tag)
     }
 
-    window.onYouTubeIframeAPIReady = () => {
-      playerRef.current = new window.YT.Player("youtube-player", {
-        videoId: content.externalId,
-        playerVars: {
-          modestbranding: 1,
-          rel: 0,          // no related videos at end
-          origin: window.location.origin,
-          start: userProgress?.timestamp ? Math.floor(userProgress.timestamp) : 0,
-        },
-        events: {
-          onReady: () => setIsReady(true),
-        },
-      })
+    const initializePlayer = () => {
+      try {
+        if (playerRef.current) {
+          playerRef.current.destroy()
+        }
+
+        playerRef.current = new window.YT.Player("youtube-player", {
+          videoId: content.externalId,
+          playerVars: {
+            modestbranding: 1,
+            rel: 0,
+            origin: window.location.origin,
+            start: userProgress?.timestamp ? Math.floor(userProgress.timestamp) : 0,
+          },
+          events: {
+            onReady: () => {
+              console.log('[YOUTUBE_PLAYER] Ready with video:', content.externalId)
+              setIsReady(true)
+              setPlayerError(null)
+            },
+            onError: (event) => {
+              const errorMsg = `YouTube player error code: ${event.data}`
+              console.error('[YOUTUBE_PLAYER]', errorMsg)
+              setPlayerError(errorMsg)
+              setIsReady(false)
+            },
+          },
+        })
+      } catch (error) {
+        const errorMsg = `Failed to initialize player: ${error.message}`
+        console.error('[YOUTUBE_PLAYER] Initialization error:', errorMsg)
+        setPlayerError(errorMsg)
+      }
     }
 
-    // If YT already loaded
+    window.onYouTubeIframeAPIReady = initializePlayer
+
+    // If YT already loaded, initialize immediately
     if (window.YT?.Player) {
-      window.onYouTubeIframeAPIReady()
+      initializePlayer()
     }
 
     return () => {
-      if (playerRef.current?.destroy) playerRef.current.destroy()
+      if (playerRef.current?.destroy) {
+        try {
+          playerRef.current.destroy()
+        } catch (e) {
+          console.warn('[YOUTUBE_PLAYER] Error destroying player:', e)
+        }
+      }
     }
-  }, [content.externalId, userProgress?.timestamp])
+  }, [content?.externalId, userProgress?.timestamp])
 
   // Track watch progress
   useEffect(() => {
@@ -106,8 +142,39 @@ export default function ExternalWatchClient({ content, chapters, userProgress, u
 
       {/* Video Player */}
       <div className="w-full aspect-video bg-black rounded-xl overflow-hidden mb-6">
-        <div id="youtube-player" className="w-full h-full" />
+        {!content?.externalId ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="text-center text-zinc-400">
+              <p className="text-lg mb-2">❌ Video not available</p>
+              <p className="text-sm">The video ID is missing or invalid.</p>
+            </div>
+          </div>
+        ) : playerError ? (
+          <div className="w-full h-full flex items-center justify-center bg-zinc-950 p-6">
+            <div className="text-center max-w-md">
+              <p className="text-lg font-semibold text-red-400 mb-2">⚠️ Player Failed to Load</p>
+              <p className="text-sm text-zinc-400 mb-4">{playerError}</p>
+              <a
+                href={content.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+              >
+                Watch on YouTube →
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div id="youtube-player" style={{ width: '100%', height: '100%' }} />
+        )}
       </div>
+
+      {/* Player Load Status */}
+      {content?.externalId && !isReady && !playerError && content.status !== "pending" && (
+        <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4 mb-6 text-sm text-zinc-400">
+          ⏳ Loading YouTube player... If this takes too long, try refreshing the page.
+        </div>
+      )}
 
       {/* Processing banner */}
       {content.status === "pending" && (

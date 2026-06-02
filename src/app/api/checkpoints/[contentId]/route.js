@@ -7,12 +7,13 @@ export async function GET(request, { params }) {
     const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const contentId = parseInt(params.contentId)
+    const { contentId } = await params
+    const parsedContentId = parseInt(contentId)
 
     const checkpoints = await prisma.comprehensionCheckpoint.findMany({
       where: {
         userId: user.userId,
-        contentId,
+        contentId: parsedContentId,
       },
     })
 
@@ -38,14 +39,15 @@ export async function POST(request, { params }) {
     const user = await getCurrentUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const contentId = parseInt(params.contentId)
+    const { contentId } = await params
+    const parsedContentId = parseInt(contentId)
     const { chapterIndex, chapterTitle, passed, score } = await request.json()
 
     const checkpoint = await prisma.comprehensionCheckpoint.upsert({
       where: {
         userId_contentId_chapterIndex: {
           userId: user.userId,
-          contentId,
+          contentId: parsedContentId,
           chapterIndex,
         },
       },
@@ -57,7 +59,7 @@ export async function POST(request, { params }) {
       },
       create: {
         userId: user.userId,
-        contentId,
+        contentId: parsedContentId,
         chapterIndex,
         chapterTitle: chapterTitle || null,
         passed: passed || false,

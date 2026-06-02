@@ -1,5 +1,7 @@
 import Link from "next/link"
 import EmailForm from "@/components/auth/EmailForm"
+import Navbar from "@/components/layout/Navbar"
+
 
 const FEATURES = [
   {
@@ -92,10 +94,10 @@ export default function LandingPage() {
       <nav className="absolute top-0 w-full z-50 flex items-center justify-between px-6 md:px-12 py-5">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-linear-to-br from-indigo-500 to-violet-600 flex items-center justify-center glow-indigo-sm">
-            <span className="text-white font-black text-base">S</span>
+            <span className="text-white font-black text-base">L</span>
           </div>
           <span className="text-white font-black text-2xl tracking-tight">
-            Stream<span className="gradient-text">AI</span>
+            Learn<span className="gradient-text">AI</span>
           </span>
         </div>
         <Link

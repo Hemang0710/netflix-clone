@@ -147,35 +147,44 @@ export async function generateQuiz(transcript, title) {
       messages: [
         {
           role: "system",
-          content: `You generate multiple choice quiz questions from video transcripts.
-Always respond with valid JSON only.`,
+          content: `You are an expert at creating multiple-choice quiz questions that test deep understanding of video content.
+          Your questions should directly relate to the specific content discussed in the video.
+          Questions should test comprehension, critical thinking, and key concepts - not just memorization.
+          Always respond with valid JSON only.`,
         },
         {
           role: "user",
-          content: `Create 5 quiz questions for the video "${title}".
+          content: `Create 5 multiple-choice quiz questions based on this video transcript.
+
+Video Title: "${title}"
 
 Transcript:
-${transcript.slice(0, 4000)}
+${transcript.slice(0, 6000)}
+
+IMPORTANT: Questions MUST be directly related to the specific content and concepts discussed in this transcript.
 
 Return ONLY this JSON format:
 [
   {
-    "question": "What is the main topic discussed?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "question": "Based on the video, what is [specific concept from transcript]?",
+    "options": ["Correct answer", "Plausible wrong answer", "Plausible wrong answer", "Plausible wrong answer"],
     "correct": 0,
-    "explanation": "Brief explanation of why this is correct"
+    "explanation": "This answer is correct because [specific evidence from transcript]"
   }
 ]
 
 Rules:
 - correct is the index (0-3) of the correct option
-- Questions test understanding, not memorization
-- Mix easy and medium difficulty
-- Options should all be plausible`,
+- Questions MUST directly reference specific content from the video
+- Include questions about key techniques, concepts, or insights mentioned
+- Mix question types (how, what, why, when, etc.)
+- Explanations should cite specific examples from the transcript
+- Make options realistic and plausible
+- Avoid questions about things not explicitly mentioned in the transcript`,
         },
       ],
-      max_tokens: 800,
-      temperature: 0.4,
+      max_tokens: 1000,
+      temperature: 0.5,
     })
 
     const raw = completion.choices[0].message.content

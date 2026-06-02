@@ -55,12 +55,12 @@ export default function ScriptWriter() {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-4">AI Script Writer</h2>
+    <div className="glass-card rounded-2xl shadow-md p-6 border border-white/10">
+      <h2 className="text-2xl font-bold mb-6 text-white">AI Script Writer</h2>
 
       <form onSubmit={handleGenerateScript} className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
             Video Topic
           </label>
           <input
@@ -69,14 +69,14 @@ export default function ScriptWriter() {
             value={formData.topic}
             onChange={handleInputChange}
             placeholder="e.g., Introduction to Machine Learning"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             required
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Duration (minutes)
             </label>
             <input
@@ -86,19 +86,19 @@ export default function ScriptWriter() {
               onChange={handleInputChange}
               min="1"
               max="120"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Style
             </label>
             <select
               name="style"
               value={formData.style}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="educational">Educational</option>
               <option value="entertaining">Entertaining</option>
@@ -109,7 +109,7 @@ export default function ScriptWriter() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
             Target Audience (optional)
           </label>
           <input
@@ -118,12 +118,12 @@ export default function ScriptWriter() {
             value={formData.targetAudience}
             onChange={handleInputChange}
             placeholder="e.g., Beginners, Intermediate learners"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
             Key Points (optional)
           </label>
           <textarea
@@ -132,43 +132,43 @@ export default function ScriptWriter() {
             onChange={handleInputChange}
             placeholder="Enter key points separated by commas"
             rows="3"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading || !formData.topic}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition"
+          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-600 text-white font-semibold py-2.5 px-4 rounded-lg transition glow-indigo-sm"
         >
           {loading ? 'Generating Script...' : 'Generate Script'}
         </button>
       </form>
 
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-          <p className="text-red-700">{error}</p>
+        <div className="bg-red-500/15 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+          <p className="text-red-400">{error}</p>
         </div>
       )}
 
       {script && (
         <div className="space-y-4">
-          <div className="bg-green-50 border-l-4 border-green-500 p-4">
-            <p className="text-sm text-gray-600">
-              Word Count: <span className="font-semibold">{script.wordCount}</span>
+          <div className="bg-emerald-500/15 border-l-4 border-emerald-500 p-4 rounded-lg">
+            <p className="text-sm text-slate-300">
+              Word Count: <span className="font-semibold text-emerald-400">{script.wordCount}</span>
             </p>
           </div>
 
-          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <h3 className="text-lg font-semibold mb-3">Generated Script</h3>
-            <div className="max-h-96 overflow-y-auto whitespace-pre-wrap text-sm text-gray-700">
+          <div className="border border-white/10 rounded-lg p-4 bg-white/5">
+            <h3 className="text-lg font-semibold mb-3 text-white">Generated Script</h3>
+            <div className="max-h-96 overflow-y-auto whitespace-pre-wrap text-sm text-slate-300">
               {script.script}
             </div>
           </div>
 
           <button
             onClick={handleDownloadScript}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-lg transition"
           >
             Download Script
           </button>

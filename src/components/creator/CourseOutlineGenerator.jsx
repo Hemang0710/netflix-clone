@@ -62,12 +62,12 @@ ${outline.outline.map((module) => `## ${module.content}\n`).join('\n')}`;
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-4">AI Course Outline Generator</h2>
+    <div className="glass-card rounded-2xl shadow-md p-6 border border-white/10">
+      <h2 className="text-2xl font-bold mb-6 text-white">AI Course Outline Generator</h2>
 
       <form onSubmit={handleGenerateOutline} className="space-y-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
             Course Subject
           </label>
           <input
@@ -76,21 +76,21 @@ ${outline.outline.map((module) => `## ${module.content}\n`).join('\n')}`;
             value={formData.subject}
             onChange={handleInputChange}
             placeholder="e.g., Web Development with React"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             required
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Course Level
             </label>
             <select
               name="level"
               value={formData.level}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             >
               <option value="Beginner">Beginner</option>
               <option value="Intermediate">Intermediate</option>
@@ -99,7 +99,7 @@ ${outline.outline.map((module) => `## ${module.content}\n`).join('\n')}`;
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-2">
               Number of Modules
             </label>
             <input
@@ -109,13 +109,13 @@ ${outline.outline.map((module) => `## ${module.content}\n`).join('\n')}`;
               onChange={handleInputChange}
               min="1"
               max="20"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
             Target Audience (optional)
           </label>
           <input
@@ -124,12 +124,12 @@ ${outline.outline.map((module) => `## ${module.content}\n`).join('\n')}`;
             value={formData.targetAudience}
             onChange={handleInputChange}
             placeholder="e.g., Students, Professionals, Career Changers"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-slate-300 mb-2">
             Learning Objectives (optional)
           </label>
           <textarea
@@ -138,54 +138,54 @@ ${outline.outline.map((module) => `## ${module.content}\n`).join('\n')}`;
             onChange={handleInputChange}
             placeholder="Enter learning objectives separated by commas"
             rows="3"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading || !formData.subject}
-          className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded transition"
+          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-600 text-white font-semibold py-2.5 px-4 rounded-lg transition glow-indigo-sm"
         >
           {loading ? 'Generating Outline...' : 'Generate Course Outline'}
         </button>
       </form>
 
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
-          <p className="text-red-700">{error}</p>
+        <div className="bg-red-500/15 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
+          <p className="text-red-400">{error}</p>
         </div>
       )}
 
       {outline && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-4 rounded">
-              <p className="text-sm text-gray-600">Modules</p>
-              <p className="text-2xl font-bold">{outline.moduleCount}</p>
+            <div className="bg-indigo-500/15 border border-indigo-500/20 p-4 rounded-lg">
+              <p className="text-sm text-slate-400">Modules</p>
+              <p className="text-2xl font-bold text-white mt-1">{outline.moduleCount}</p>
             </div>
-            <div className="bg-green-50 p-4 rounded">
-              <p className="text-sm text-gray-600">Estimated Hours</p>
-              <p className="text-2xl font-bold">{outline.totalEstimatedHours}</p>
+            <div className="bg-emerald-500/15 border border-emerald-500/20 p-4 rounded-lg">
+              <p className="text-sm text-slate-400">Estimated Hours</p>
+              <p className="text-2xl font-bold text-white mt-1">{outline.totalEstimatedHours}</p>
             </div>
-            <div className="bg-purple-50 p-4 rounded">
-              <p className="text-sm text-gray-600">Level</p>
-              <p className="text-xl font-bold">{outline.level}</p>
+            <div className="bg-purple-500/15 border border-purple-500/20 p-4 rounded-lg">
+              <p className="text-sm text-slate-400">Level</p>
+              <p className="text-xl font-bold text-white mt-1">{outline.level}</p>
             </div>
           </div>
 
-          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <h3 className="text-lg font-semibold mb-4">Course Structure</h3>
+          <div className="border border-white/10 rounded-lg p-4 bg-white/5">
+            <h3 className="text-lg font-semibold mb-4 text-white">Course Structure</h3>
             <div className="max-h-96 overflow-y-auto space-y-3">
               {outline.outline.map((module, idx) => (
                 <div
                   key={idx}
-                  className="bg-white p-4 rounded border-l-4 border-blue-500"
+                  className="bg-white/5 border border-white/10 p-4 rounded-lg border-l-4 border-l-indigo-500"
                 >
-                  <h4 className="font-semibold text-gray-800 mb-2">
+                  <h4 className="font-semibold text-white mb-2">
                     Module {module.moduleNumber}
                   </h4>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                  <p className="text-sm text-slate-300 whitespace-pre-wrap">
                     {module.content}
                   </p>
                 </div>
@@ -195,7 +195,7 @@ ${outline.outline.map((module) => `## ${module.content}\n`).join('\n')}`;
 
           <button
             onClick={handleDownloadOutline}
-            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 px-4 rounded-lg transition"
           >
             Download Course Outline
           </button>

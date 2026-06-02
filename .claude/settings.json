@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "command": "npx",
+      "args": ["@supabase/mcp-server"]
+    },
+    "vercel": {
+      "command": "npx",
+      "args": ["@vercel/mcp-server"]
+    },
+    "gmail": {
+      "command": "npx",
+      "args": ["@anthropic-ai/mcp-server-gmail"]
+    },
+    "google-calendar": {
+      "command": "npx",
+      "args": ["@anthropic-ai/mcp-server-google-calendar"]
+    },
+    "google-drive": {
+      "command": "npx",
+      "args": ["@anthropic-ai/mcp-server-google-drive"]
+    },
+    "stripe": {
+      "command": "npx",
+      "args": ["@anthropic-ai/mcp-server-stripe"]
+    }
+  }
+}

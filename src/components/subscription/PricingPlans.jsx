@@ -8,6 +8,46 @@ export default function PricingPlans({ currentPlan }) {
   const router = useRouter()
   const [loading, setLoading] = useState(null)
   const [error, setError] = useState("")
+  const [promoCode, setPromoCode] = useState("")
+  const [appliedPromoCode, setAppliedPromoCode] = useState("")
+  const [promoLoading, setPromoLoading] = useState(false)
+  const [promoSuccess, setPromoSuccess] = useState("")
+
+  async function handleRedeemPromo() {
+    if (!promoCode.trim()) {
+      setError("Please enter a promo code")
+      return
+    }
+    setPromoLoading(true)
+    setError("")
+    setPromoSuccess("")
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          priceId: "dummy", // Just for validation
+          planId: "basic",
+          discountCode: promoCode.toUpperCase(),
+          validateOnly: true
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.message || "Promo code is not valid")
+        return
+      }
+      setAppliedPromoCode(promoCode.toUpperCase())
+      setPromoSuccess("✓ Promo code applied! You'll pay $0 at checkout.")
+      setPromoCode("")
+      setError("")
+    } catch (err) {
+      console.error("Promo validation error:", err)
+      setError("Promo code is not valid")
+    } finally {
+      setPromoLoading(false)
+    }
+  }
 
   async function handleSubscribe(plan) {
     setLoading(plan.id)
@@ -16,7 +56,11 @@ export default function PricingPlans({ currentPlan }) {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: plan.priceId, planId: plan.id }),
+        body: JSON.stringify({
+          priceId: plan.priceId,
+          planId: plan.id,
+          ...(appliedPromoCode && {discountCode: appliedPromoCode})
+        }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -46,6 +90,54 @@ export default function PricingPlans({ currentPlan }) {
           {error}
         </p>
       )}
+
+      <div className="mb-8">
+        <label className="block text-sm font-medium text-slate-300 mb-2">
+          Have a promo code?
+        </label>
+        {appliedPromoCode ? (
+          <div className="flex items-center gap-3">
+            <div className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm font-medium">
+              ✓ {appliedPromoCode}
+            </div>
+            <button
+              onClick={() => {
+                setAppliedPromoCode("")
+                setPromoSuccess("")
+              }}
+              className="text-sm text-slate-400 hover:text-slate-300 underline"
+            >
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Enter the promo code"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+              disabled={promoLoading}
+              className={`flex-1 md:flex-none md:w-80 px-4 py-2 rounded-lg bg-white/5 border text-white placeholder-slate-500 focus:outline-none disabled:opacity-50 ${
+                error && promoCode ? 'border-red-500/50' : 'border-white/10 focus:border-indigo-500/50'
+              }`}
+            />
+            <button
+              onClick={handleRedeemPromo}
+              disabled={promoLoading || !promoCode.trim()}
+              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {promoLoading ? "Validating..." : "Redeem"}
+            </button>
+          </div>
+        )}
+        {error && !appliedPromoCode && (
+          <p className="text-red-400 text-sm mt-2 font-medium">⚠ {error}</p>
+        )}
+        {promoSuccess && (
+          <p className="text-emerald-400 text-sm mt-2 font-medium">{promoSuccess}</p>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {PLANS.map((plan) => {

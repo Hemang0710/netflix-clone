@@ -57,6 +57,8 @@ model User {
   learningMetrics          LearningMetric[]
   studyStreak              StudyStreak?
   highlights               Highlight[]
+  createdQuizChallenges    QuizChallenge[]          @relation("CreatedChallenges")
+  quizChallengeParticipants QuizChallengeParticipant[]
 }
 
 model ConceptMastery {
@@ -216,6 +218,7 @@ model Content {
   buddySessions         StudyBuddySession[]
   sharedQuestions       SharedQuestion[]
   highlights            Highlight[]
+  quizChallenges        QuizChallenge[] @relation("QuizChallenges")
 }
 
 model Quiz {
@@ -340,6 +343,7 @@ model Comment {
   parentId  Int?
   body      String
   isFlagged Boolean   @default(false)
+  helpful   Boolean   @default(false)
   createdAt DateTime  @default(now())
   user      User      @relation(fields: [userId], references: [id])
   content   Content   @relation(fields: [contentId], references: [id])
@@ -769,4 +773,45 @@ model Highlight {
   createdAt         DateTime  @default(now())
 
   @@index([userId, contentId])
+}
+
+// ========== ENGAGEMENT FEATURES ==========
+
+model QuizChallenge {
+  id                String                      @id @default(uuid())
+  contentId         Int
+  content           Content                     @relation(name: "QuizChallenges", fields: [contentId], references: [id], onDelete: Cascade)
+
+  challengerId      Int
+  challenger        User                        @relation(name: "CreatedChallenges", fields: [challengerId], references: [id], onDelete: Cascade)
+
+  challengedUserIds String                      @default("[]") // JSON array of user IDs
+  leaderboardMode   Boolean                     @default(false)
+  status            String                      @default("active") // active | completed | expired
+
+  createdAt         DateTime                    @default(now())
+  expiresAt         DateTime
+
+  participants      QuizChallengeParticipant[]
+
+  @@index([contentId])
+  @@index([challengerId])
+  @@index([expiresAt])
+}
+
+model QuizChallengeParticipant {
+  id            Int            @id @default(autoincrement())
+  challengeId   String
+  challenge     QuizChallenge  @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  userId        Int
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  score         Int?
+  timeSeconds   Int?
+  attemptedAt   DateTime       @default(now())
+
+  @@unique([challengeId, userId])
+  @@index([userId])
+  @@index([score])
 }

@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar"
 import ContentRow from "@/components/content/ContentRow"
+import EngagementLoop from "@/components/learner/EngagementLoop"
 import Link from "next/link"
 import Image from "next/image"
 import { getCurrentUser } from "@/lib/auth"
@@ -174,6 +175,13 @@ export default async function BrowsePage() {
               </Link>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Engagement Loop ── */}
+      {user && (
+        <div className="px-6 md:px-12 py-8 relative z-10">
+          <EngagementLoop />
         </div>
       )}
 

@@ -49,8 +49,25 @@ OUTSTANDING_ITEMS.md
 CREATOR_INTELLIGENCE_SETUP.md
 CREATOR_INTELLIGENCE_COMPLETE.md
 NAVIGATION_INTEGRATION.md
+ENGAGEMENT_FEATURES.md
 
 # Keep docs structure but ignore internal docs
 docs/pwa/
 docs/features/
 docs/implementation/
+dev.log
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

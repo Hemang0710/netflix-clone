@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { Groq } from 'groq-sdk'
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-})
+import { getGroqClient } from '@/lib/groq'
 
 export async function POST(request, { params }) {
   try {
@@ -34,20 +30,16 @@ ${chapterTranscript.substring(0, 1000)}
 
 Generate one open-ended question to verify the student understood this content.`
 
-    const message = await groq.messages.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       max_tokens: 200,
       messages: [
-        {
-          role: 'user',
-          content: userPrompt,
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
       ],
-      system: systemPrompt,
     })
 
-    const question =
-      message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    const question = completion.choices[0]?.message?.content?.trim() || ''
 
     if (!question) {
       return NextResponse.json(

@@ -2,9 +2,7 @@ import { NextResponse } from "next/server"
 import { getCurrentUser } from "@/lib/auth"
 import { checkRateLimit } from "@/lib/rateLimit"
 import prisma from "@/lib/prisma"
-import OpenAI from "openai"
-
-const groq = new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" })
+import { getGroqClient } from "@/lib/groq"
 
 export async function POST(request) {
   const { success } = await checkRateLimit(request, "api")
@@ -23,7 +21,7 @@ export async function POST(request) {
     if (!content) return NextResponse.json({ success: false, message: "Not found" }, { status: 404 })
     if (!content.transcript) return NextResponse.json({ success: false, message: "No transcript" }, { status: 400 })
 
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: `Rate video content difficulty. Return ONLY JSON: {"difficulty":"beginner"|"intermediate"|"advanced","reason":"one sentence"}` },

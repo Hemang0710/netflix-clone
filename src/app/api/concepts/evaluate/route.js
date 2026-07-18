@@ -1,10 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { Groq } from 'groq-sdk'
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-})
+import { getGroqClient } from '@/lib/groq'
 
 export async function POST(request) {
   try {
@@ -33,21 +29,17 @@ Student's Answer: ${answer}
 
 Evaluate this answer and respond with JSON only (no markdown).`
 
-    const message = await groq.messages.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: 'llama-3.3-70b-versatile',
       max_tokens: 300,
       messages: [
-        {
-          role: 'user',
-          content: userPrompt,
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
       ],
-      system: systemPrompt,
     })
 
     // Extract the response text
-    const responseText =
-      message.content[0].type === 'text' ? message.content[0].text : ''
+    const responseText = completion.choices[0]?.message?.content || ''
 
     // Try to parse JSON from response
     let result = { score: 50, feedback: responseText, correct: false }

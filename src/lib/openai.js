@@ -1,5 +1,4 @@
 import OpenAI from "openai"
-import { tr } from "zod/locales"
 
 //-- Provider Config ---
 const PROVIDER = process.env.AI_PROVIDER || "groq" // "groq" | "openai" | "gemini"
@@ -26,9 +25,22 @@ const PROVIDERS = {
 }
 const config = PROVIDERS[PROVIDER]
 
-const aiClient = new OpenAI({
-    apiKey: config.apiKey,
-    ...(config.baseURL && {baseURL: config.baseURL}),
+// Lazy singleton behind a Proxy — constructing OpenAI at module scope
+// throws during `next build` when the provider API key is not set in
+// the build environment.
+let _aiClient = null
+function getAiClient() {
+    if (!_aiClient) {
+        _aiClient = new OpenAI({
+            apiKey: config.apiKey,
+            ...(config.baseURL && {baseURL: config.baseURL}),
+        })
+    }
+    return _aiClient
+}
+
+const aiClient = new Proxy({}, {
+    get: (_target, prop) => getAiClient()[prop],
 })
 
 const GROQ_MAX_BYTES = 25 * 1024 * 1024 // 25MB Groq limit

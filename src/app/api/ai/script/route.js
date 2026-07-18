@@ -2,13 +2,8 @@ import { NextResponse } from "next/server"
 import { getCurrentUser } from "@/lib/auth"
 import { checkRateLimit } from "@/lib/rateLimit"
 import prisma from "@/lib/prisma"
-import OpenAI from "openai"
+import { getGroqClient } from "@/lib/groq"
 import { z } from "zod"
-
-const groq = new OpenAI({
-  apiKey: process.env.GROQ_API_KEY,
-  baseURL: "https://api.groq.com/openai/v1",
-})
 
 const CREDIT_COST = 2
 
@@ -74,7 +69,7 @@ export async function POST(request) {
     }
 
     // Stream the script
-    const stream = await groq.chat.completions.create({
+    const stream = await getGroqClient().chat.completions.create({
       model: "llama-3.3-70b-versatile",
       stream: true,
       messages: [

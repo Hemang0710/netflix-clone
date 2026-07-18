@@ -1,8 +1,4 @@
-import { Groq } from "groq-sdk";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { getGroqClient } from "./groq";
 
 export async function generateMicroLessons({
   transcript,
@@ -49,13 +45,14 @@ Respond ONLY with valid JSON.
 `;
 
   try {
-    const response = await groq.messages.create({
-      model: "mixtral-8x7b-32768",
+    const completion = await getGroqClient().chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       max_tokens: 2000,
       messages: [{ role: "user", content: prompt }],
     });
 
-    const parsed = JSON.parse(response.content[0].text);
+    const raw = completion.choices[0].message.content;
+    const parsed = JSON.parse(raw.replace(/```json\n?|\n?```/g, "").trim());
 
     const microLessons = parsed.microLessons.map((lesson, idx) => ({
       contentId,

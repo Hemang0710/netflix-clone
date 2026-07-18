@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server"
 import { getCurrentUser } from "@/lib/auth"
 import { checkRateLimit } from "@/lib/rateLimit"
-import OpenAI from "openai"
-
-const groq = new OpenAI({
-  apiKey: process.env.GROQ_API_KEY,
-  baseURL: "https://api.groq.com/openai/v1",
-})
+import { getGroqClient } from "@/lib/groq"
 
 const MODEL = "llama-3.3-70b-versatile"
 
@@ -117,7 +112,7 @@ Generate a ${type} explanation for this concept. Return only the JSON.`
 
     console.log(`[explain] type=${type} user=${user.userId}`)
 
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: MODEL,
       messages: [
         { role: "system", content: SYSTEM_PROMPTS[type] },

@@ -1,9 +1,5 @@
-import { Groq } from 'groq-sdk';
+import { getGroqClient } from './groq';
 import prisma from './prisma';
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY
-});
 
 export async function generateStudyPlan({
   userId,
@@ -95,8 +91,8 @@ OUTPUT FORMAT - Return ONLY valid JSON, no markdown:
   "reasoning": "Brief explanation"
 }`;
 
-    const response = await groq.messages.create({
-      model: 'mixtral-8x7b-32768',
+    const completion = await getGroqClient().chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
       max_tokens: 2000,
       messages: [{
         role: 'user',
@@ -105,7 +101,7 @@ OUTPUT FORMAT - Return ONLY valid JSON, no markdown:
     });
 
     // Parse AI response
-    const responseText = response.content[0].type === 'text' ? response.content[0].text : '';
+    const responseText = completion.choices[0]?.message?.content || '';
     let planJson;
 
     try {

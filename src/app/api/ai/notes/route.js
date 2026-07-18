@@ -2,9 +2,7 @@ import { NextResponse } from "next/server"
 import { getCurrentUser } from "@/lib/auth"
 import { checkRateLimit } from "@/lib/rateLimit"
 import prisma from "@/lib/prisma"
-import OpenAI from "openai"
-
-const groq = new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" })
+import { getGroqClient } from "@/lib/groq"
 
 export async function POST(request) {
   const { success } = await checkRateLimit(request, "api")
@@ -26,7 +24,7 @@ export async function POST(request) {
     // Delete existing AI notes before regenerating
     await prisma.note.deleteMany({ where: { contentId: Number(contentId), userId: Number(user.userId), isAI: true } })
 
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {

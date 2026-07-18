@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server"
 import { getCurrentUser } from "@/lib/auth"
 import { checkRateLimit } from "@/lib/rateLimit"
-import OpenAI from "openai"
-
-const groq = new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" })
+import { getGroqClient } from "@/lib/groq"
 
 export async function POST(request) {
   const { success } = await checkRateLimit(request, "api")
@@ -16,7 +14,7 @@ export async function POST(request) {
     const { segment, videoTitle, surroundingContext = "" } = await request.json()
     if (!segment?.trim()) return NextResponse.json({ success: false, message: "segment required" }, { status: 400 })
 
-    const completion = await groq.chat.completions.create({
+    const completion = await getGroqClient().chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {

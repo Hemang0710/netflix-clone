@@ -1,8 +1,14 @@
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { parseAIJson } from "@/lib/aiJson";
 import { Anthropic } from "@anthropic-ai/sdk";
 
 const client = new Anthropic();
+
+// Never send the answer key to the client — grading happens server-side in POST
+function stripAnswers(questions) {
+  return questions.map(({ question, options }) => ({ question, options }));
+}
 
 export async function GET(req) {
   try {
@@ -35,11 +41,22 @@ export async function GET(req) {
     // Get content to base quiz on
     const content = await prisma.content.findUnique({
       where: { id: Number(contentId) },
-      select: { title: true, description: true, transcript: true },
+      select: { id: true, title: true, description: true, transcript: true, quiz: true },
     });
 
     if (!content) {
       return Response.json({ error: "Content not found" }, { status: 404 });
+    }
+
+    // If the content already has a quiz, serve that (it's what POST grades against)
+    if (content.quiz) {
+      const storedQuestions = JSON.parse(content.quiz.questions).slice(0, 5);
+      return Response.json({
+        quiz: stripAnswers(storedQuestions),
+        contentId,
+        estimatedTime: "5 minutes",
+        message: "Quick assessment to show you what we'll cover!",
+      });
     }
 
     // Generate 5-question quiz with Claude
@@ -66,11 +83,23 @@ Format:
       messages: [{ role: "user", content: quizPrompt }],
     });
 
-    const quizText = response.content[0].type === "text" ? response.content[0].text : "[]";
-    const quiz = JSON.parse(quizText);
+    const quizText = response.content[0].type === "text" ? response.content[0].text : "";
+    const quiz = parseAIJson(quizText, null);
+
+    if (!Array.isArray(quiz) || quiz.length === 0) {
+      return Response.json({ error: "Failed to generate quiz" }, { status: 502 });
+    }
+
+    // Persist so POST grades against the same questions the user saw
+    await prisma.quiz.create({
+      data: {
+        contentId: content.id,
+        questions: JSON.stringify(quiz),
+      },
+    });
 
     return Response.json({
-      quiz,
+      quiz: stripAnswers(quiz),
       contentId,
       estimatedTime: "5 minutes",
       message: "Quick assessment to show you what we'll cover!",

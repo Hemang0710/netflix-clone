@@ -1,6 +1,10 @@
 import Navbar from "@/components/layout/Navbar"
 import LearningHeatmap from "@/components/learning/LearningHeatmap"
 import DailyReviewSession from "@/components/learning/DailyReviewSession"
+import ForgettingForecast from "@/components/learning/ForgettingForecast"
+import StudyAutopilot from "@/components/learning/StudyAutopilot"
+import TeachBackMode from "@/components/learning/TeachBackMode"
+import ProjectBridges from "@/components/learning/ProjectBridges"
 import ConceptMasteryList from "@/components/knowledge/ConceptMasteryList"
 import ForgettingCurveChart from "@/components/learning/ForgettingCurveChart"
 import KnowledgeMap from "@/components/knowledge/KnowledgeMap"
@@ -72,9 +76,29 @@ export default async function LearnPage() {
           ))}
         </div>
 
-        {/* Daily Review Section */}
+        {/* Memory Forecast */}
         <div className="mb-8">
+          <ForgettingForecast />
+        </div>
+
+        {/* Study Autopilot */}
+        <div id="autopilot" className="mb-8 scroll-mt-24">
+          <StudyAutopilot />
+        </div>
+
+        {/* Daily Review Section */}
+        <div id="daily-review" className="mb-8 scroll-mt-24">
           <DailyReviewSession dueCount={dueConceptsCount} />
+        </div>
+
+        {/* Teach-Back (Feynman) Mode */}
+        <div id="teach-back" className="mb-8 scroll-mt-24">
+          <TeachBackMode />
+        </div>
+
+        {/* Learn-to-Do Project Bridges */}
+        <div id="project-bridges" className="mb-8 scroll-mt-24">
+          <ProjectBridges />
         </div>
 
         {/* Flashcard due notice */}

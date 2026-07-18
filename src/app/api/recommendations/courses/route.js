@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { parseAIJson } from "@/lib/aiJson";
 import { Anthropic } from "@anthropic-ai/sdk";
 
 const client = new Anthropic();
@@ -34,10 +35,15 @@ export async function GET(req) {
     ];
 
     // Find content related to weak areas
+    // (uses `contains` per concept — full-text `search` needs a Prisma preview
+    // feature that is not enabled)
     const recommendedContent = await prisma.content.findMany({
       where: {
+        status: "ready",
         OR: [
-          { title: { search: weakConcepts.join(" | ") } },
+          ...weakConcepts.map((concept) => ({
+            title: { contains: concept, mode: "insensitive" },
+          })),
           { genre: { notIn: completedGenres } },
         ],
       },
@@ -71,15 +77,34 @@ For each recommendation, provide:
 Format as JSON array with fields: courseId, title, reason, outcome, estimatedHours, difficulty
 `;
 
-    const response = await client.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: recommendationPrompt }],
-    });
+    // AI ranking is best-effort: fall back to the DB matches if the model
+    // is unavailable or returns something unparseable.
+    let recommendations = recommendedContent.slice(0, 5).map((c) => ({
+      courseId: c.id,
+      title: c.title,
+      reason: weakConcepts.length
+        ? `Related to areas you're still working on`
+        : `Explores a genre you haven't tried yet`,
+      difficulty: c.difficulty,
+    }));
 
-    const recommendations = JSON.parse(
-      response.content[0].type === "text" ? response.content[0].text : "[]"
-    );
+    try {
+      const response = await client.messages.create({
+        model: "claude-opus-4-8",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: recommendationPrompt }],
+      });
+
+      const aiRecommendations = parseAIJson(
+        response.content[0].type === "text" ? response.content[0].text : "",
+        null
+      );
+      if (Array.isArray(aiRecommendations) && aiRecommendations.length > 0) {
+        recommendations = aiRecommendations;
+      }
+    } catch (aiError) {
+      console.error("AI recommendation fallback:", aiError.message);
+    }
 
     return Response.json({
       recommendations,

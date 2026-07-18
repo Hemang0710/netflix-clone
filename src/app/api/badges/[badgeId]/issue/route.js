@@ -1,17 +1,25 @@
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 import { issueHederaBadge } from "@/lib/hedera";
 import { uploadToIPFS } from "@/lib/ipfs";
 import { generateVerificationCode } from "@/lib/badgeEligibility";
 
 /**
- * POST /api/badges/[badgeId]/issue - Issue a badge to a user
- * Called when user meets criteria (quiz score, flashcards, time spent)
+ * POST /api/badges/[badgeId]/issue - Issue a badge to the authenticated user
+ * Evidence (quiz score, flashcard reps, time spent) is computed server-side
+ * from the user's actual activity so it cannot be forged.
  */
 export async function POST(request, { params }) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return Response.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+    const userId = Number(user.userId);
     const { badgeId } = await params;
-    const { userId, quizScore, flashcardReps, timeSpent } =
-      await request.json();
 
     // Get badge with criteria
     const badge = await prisma.badge.findUnique({
@@ -26,13 +34,39 @@ export async function POST(request, { params }) {
       );
     }
 
+    if (!badge.isPublished) {
+      return Response.json(
+        { success: false, error: "Badge is not available" },
+        { status: 403 }
+      );
+    }
+
     const criteria = JSON.parse(badge.criteria);
+
+    // Compute evidence server-side from the user's real activity
+    const [bestAttempt, flashcardAgg, watchProgress] = await Promise.all([
+      prisma.quizAttempt.findFirst({
+        where: { userId, contentId: badge.contentId },
+        orderBy: { score: "desc" },
+      }),
+      prisma.flashcard.aggregate({
+        where: { userId, contentId: badge.contentId },
+        _sum: { repetitions: true },
+      }),
+      prisma.watchProgress.findUnique({
+        where: { userId_contentId: { userId, contentId: badge.contentId } },
+      }),
+    ]);
+
+    const quizScore = bestAttempt?.score ?? 0;
+    const flashcardReps = flashcardAgg._sum.repetitions ?? 0;
+    const timeSpent = Math.round(watchProgress?.timestamp ?? 0);
 
     // Check if user meets criteria
     if (
-      quizScore < criteria.minQuizScore ||
-      flashcardReps < criteria.minFlashcardReps ||
-      timeSpent < criteria.minTimeSpent
+      quizScore < (criteria.minQuizScore ?? 0) ||
+      flashcardReps < (criteria.minFlashcardReps ?? 0) ||
+      timeSpent < (criteria.minTimeSpent ?? 0)
     ) {
       return Response.json(
         {
@@ -57,7 +91,7 @@ export async function POST(request, { params }) {
     const existing = await prisma.badgeIssuance.findUnique({
       where: {
         userId_badgeId: {
-          userId: Number(userId),
+          userId,
           badgeId: Number(badgeId),
         },
       },
@@ -71,17 +105,10 @@ export async function POST(request, { params }) {
     }
 
     // Get user for credential
-    const user = await prisma.user.findUnique({
-      where: { id: Number(userId) },
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
       include: { profile: true },
     });
-
-    if (!user) {
-      return Response.json(
-        { success: false, error: "User not found" },
-        { status: 404 }
-      );
-    }
 
     // Create W3C Verifiable Credential
     const credential = {
@@ -98,8 +125,8 @@ export async function POST(request, { params }) {
       issuanceDate: new Date().toISOString(),
       credentialSubject: {
         id: `did:learnai:${userId}`,
-        name: user?.profile?.name || "Learner",
-        email: user?.email,
+        name: dbUser?.profile?.name || "Learner",
+        email: dbUser?.email,
       },
       badge: {
         id: badge.id,
@@ -132,7 +159,7 @@ export async function POST(request, { params }) {
     // Save issuance record
     const issuance = await prisma.badgeIssuance.create({
       data: {
-        userId: Number(userId),
+        userId,
         badgeId: Number(badgeId),
         hederaTxHash: txHash,
         hederaTokenId: tokenId,
@@ -163,7 +190,7 @@ export async function POST(request, { params }) {
   } catch (error) {
     console.error("Error issuing badge:", error);
     return Response.json(
-      { success: false, error: error.message },
+      { success: false, error: "Failed to issue badge" },
       { status: 500 }
     );
   }

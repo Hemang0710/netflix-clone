@@ -10,6 +10,8 @@ const customJestConfig = {
   testMatch: ['**/test/**/*.test.js', '**/__tests__/**/*.test.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    // jose is ESM-only and Jest doesn't transform node_modules
+    '^jose$': '<rootDir>/__mocks__/jose.js',
   },
   collectCoverageFrom: [
     'src/**/*.{js,jsx}',

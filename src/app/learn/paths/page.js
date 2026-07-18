@@ -3,6 +3,10 @@ import prisma from "@/lib/prisma"
 import Link from "next/link"
 import Image from "next/image"
 
+// Path list comes from the DB at request time — prerendering at build time
+// would bake stale data and fail builds without a reachable database
+export const dynamic = "force-dynamic"
+
 export default async function LearningPathsPage() {
   const paths = await prisma.learningPath.findMany({
     where: { isPublished: true },

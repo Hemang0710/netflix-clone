@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import ConceptMasteryList from '@/components/ConceptMasteryList'
+import ConceptMasteryList from '@/components/knowledge/ConceptMasteryList'
 
 global.fetch = jest.fn()
 

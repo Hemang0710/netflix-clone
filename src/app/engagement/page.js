@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import BadgeUnlocks from "@/components/engagement/BadgeUnlocks";
 import FeatureUnlocks from "@/components/engagement/FeatureUnlocks";
@@ -95,36 +96,36 @@ export default async function EngagementPage() {
   );
 }
 
-async function RecommendationsSection() {
-  try {
-    // This would be fetched with proper auth
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Study Partners */}
-        <div className="rounded-lg bg-white/5 border border-white/10 p-6">
-          <h3 className="font-bold text-white mb-4">👥 Suggested Study Partners</h3>
-          <p className="text-slate-400 text-sm mb-4">
-            Connect with learners who can help you master weak topics
-          </p>
-          <button className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-all text-sm">
-            See Recommendations →
-          </button>
-        </div>
-
-        {/* Courses */}
-        <div className="rounded-lg bg-white/5 border border-white/10 p-6">
-          <h3 className="font-bold text-white mb-4">📚 Courses to Fill Gaps</h3>
-          <p className="text-slate-400 text-sm mb-4">
-            Recommended courses based on your learning profile
-          </p>
-          <button className="w-full py-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg transition-all text-sm">
-            View Path →
-          </button>
-        </div>
+function RecommendationsSection() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Study Partners */}
+      <div className="rounded-lg bg-white/5 border border-white/10 p-6">
+        <h3 className="font-bold text-white mb-4">👥 Suggested Study Partners</h3>
+        <p className="text-slate-400 text-sm mb-4">
+          Connect with learners who can help you master weak topics
+        </p>
+        <Link
+          href="/recommendations"
+          className="block w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-lg transition-all text-sm text-center"
+        >
+          See Recommendations →
+        </Link>
       </div>
-    );
-  } catch (error) {
-    console.error("Failed to load recommendations:", error);
-    return null;
-  }
+
+      {/* Courses */}
+      <div className="rounded-lg bg-white/5 border border-white/10 p-6">
+        <h3 className="font-bold text-white mb-4">📚 Courses to Fill Gaps</h3>
+        <p className="text-slate-400 text-sm mb-4">
+          Recommended courses based on your learning profile
+        </p>
+        <Link
+          href="/recommendations"
+          className="block w-full py-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg transition-all text-sm text-center"
+        >
+          View Path →
+        </Link>
+      </div>
+    </div>
+  );
 }

@@ -232,7 +232,7 @@ export default function LearnerDashboard() {
 function QuickStatCard({ label, value, color }) {
   return (
     <div
-      className={`glass-card rounded-xl p-6 border border-white/10 bg-gradient-to-br ${color}`}
+      className={`glass-card rounded-xl p-6 border border-white/10 bg-linear-to-br ${color}`}
     >
       <p className="text-slate-400 text-sm font-semibold mb-2">{label}</p>
       <p className="text-3xl font-black gradient-text">{value}</p>

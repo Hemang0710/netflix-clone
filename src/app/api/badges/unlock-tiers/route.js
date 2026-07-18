@@ -56,6 +56,31 @@ const BADGE_TIERS = {
   },
 };
 
+async function getStatForType(userId, type) {
+  switch (type) {
+    case "streak": {
+      const streak = await prisma.studyStreak.findUnique({ where: { userId } });
+      return streak?.currentStreak || 0;
+    }
+    case "quizzes_completed":
+      return prisma.quizAttempt.count({ where: { userId } });
+    case "activities":
+      return prisma.activeLearner.count({ where: { userId } });
+    case "group_messages":
+      return prisma.studyGroupMessage.count({ where: { userId } });
+    case "concepts_mastered":
+      return prisma.conceptMastery.count({
+        where: { userId, masteryScore: { gte: 0.8 } },
+      });
+    case "courses_completed":
+      return prisma.watchProgress.count({ where: { userId, completed: true } });
+    case "helpful_comments":
+      return prisma.comment.count({ where: { userId, helpful: true } });
+    default:
+      return 0;
+  }
+}
+
 export async function GET(req) {
   try {
     const user = await getCurrentUser();
@@ -77,7 +102,7 @@ export async function GET(req) {
       prisma.studyStreak.findUnique({ where: { userId } }),
       prisma.quizAttempt.count({ where: { userId } }),
       prisma.activeLearner.count({ where: { userId } }),
-      prisma.studyGroupMessage.count({ where: { authorId: userId } }),
+      prisma.studyGroupMessage.count({ where: { userId } }),
       prisma.conceptMastery.count({
         where: { userId, masteryScore: { gte: 0.8 } },
       }),
@@ -85,11 +110,11 @@ export async function GET(req) {
         where: { userId, completed: true },
       }),
       prisma.comment.count({ where: { userId, helpful: true } }),
-      prisma.badgeIssuance.findMany({ where: { userId } }),
+      prisma.achievement.findMany({ where: { userId } }),
     ]);
 
     const userStats = {
-      streak: streak?.current || 0,
+      streak: streak?.currentStreak || 0,
       quizzes_completed: quizAttempts,
       activities: activitiesCount,
       group_messages: groupMessages,
@@ -105,7 +130,7 @@ export async function GET(req) {
     Object.entries(BADGE_TIERS).forEach(([badgeName, config]) => {
       const requirement = config.requirement;
       const stat = userStats[config.type];
-      const alreadyEarned = existingBadges.some((b) => b.badgeId === badgeName);
+      const alreadyEarned = existingBadges.some((b) => b.key === badgeName);
 
       if (stat >= requirement && !alreadyEarned) {
         unlockedBadges.push({
@@ -154,23 +179,36 @@ export async function POST(req) {
     const { badgeName } = await req.json();
     const userId = Number(user.userId);
 
-    if (!BADGE_TIERS[badgeName]) {
+    const tier = BADGE_TIERS[badgeName];
+    if (!tier) {
       return Response.json({ error: "Invalid badge" }, { status: 400 });
     }
 
-    // Create badge issuance
-    const badge = await prisma.badgeIssuance.create({
-      data: {
+    // Verify server-side that the user actually meets the requirement
+    const stat = await getStatForType(userId, tier.type);
+    if (stat < tier.requirement) {
+      return Response.json(
+        { error: "Requirement not met", current: stat, required: tier.requirement },
+        { status: 400 }
+      );
+    }
+
+    // Record the achievement (unique per user+key, so double claims fail cleanly)
+    const badge = await prisma.achievement.upsert({
+      where: { userId_key: { userId, key: badgeName } },
+      update: {},
+      create: {
         userId,
-        badgeId: badgeName,
-        issuedAt: new Date(),
+        key: badgeName,
+        name: badgeName,
+        icon: tier.icon,
       },
     });
 
     return Response.json({
       success: true,
       badge,
-      unlockedFeature: BADGE_TIERS[badgeName].unlock,
+      unlockedFeature: tier.unlock,
     });
   } catch (error) {
     console.error("Claim badge error:", error);

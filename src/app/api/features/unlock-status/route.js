@@ -67,13 +67,13 @@ export async function GET(req) {
       prisma.conceptMastery.count({
         where: { userId, masteryScore: { gte: 0.8 } },
       }),
-      prisma.studyGroupMessage.count({ where: { authorId: userId } }),
+      prisma.studyGroupMessage.count({ where: { userId } }),
       prisma.watchProgress.count({ where: { userId, completed: true } }),
       prisma.activeLearner.count({ where: { userId } }),
     ]);
 
     const stats = {
-      streak: streak?.current || 0,
+      streak: streak?.currentStreak || 0,
       quizzes_completed: quizzes,
       concepts_mastered: concepts,
       group_messages: groups,

@@ -64,8 +64,8 @@ export default function QuickQuiz({ contentId, onComplete }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contentId,
-          answers: finalAnswers.map((a) =>
-            a ? String.fromCharCode(65 + quiz[0].options.indexOf(a)) : null
+          answers: finalAnswers.map((a, i) =>
+            a ? String.fromCharCode(65 + quiz[i].options.indexOf(a)) : null
           ),
         }),
       });

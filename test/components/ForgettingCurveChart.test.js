@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import ForgettingCurveChart from '@/components/ForgettingCurveChart'
+import ForgettingCurveChart from '@/components/learning/ForgettingCurveChart'
 
 global.fetch = jest.fn()
 

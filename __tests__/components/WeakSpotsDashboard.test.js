@@ -246,8 +246,9 @@ describe('WeakSpotsDashboard Component', () => {
 
     render(<WeakSpotsDashboard />)
 
+    // On fetch failure the dashboard falls back to its empty state
     await waitFor(() => {
-      expect(screen.getByText(/start learning to visualize your knowledge map/i)).toBeInTheDocument()
+      expect(screen.getByText(/no weak spots detected/i)).toBeInTheDocument()
     })
   })
 })

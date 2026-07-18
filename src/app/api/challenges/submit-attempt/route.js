@@ -9,16 +9,19 @@ export async function POST(req) {
     const { contentId, challengeId, score, timeSeconds } = await req.json();
     const userId = Number(user.userId);
 
-    if (!contentId || !score) {
+    if (!contentId || score == null || Number.isNaN(Number(score))) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
     }
+
+    // Clamp score to the valid 0-100 range
+    const finalScore = Math.max(0, Math.min(100, Math.round(Number(score))));
 
     // Create quiz attempt (if not already done)
     const attempt = await prisma.quizAttempt.create({
       data: {
         userId,
         contentId: Number(contentId),
-        score: Number(score),
+        score: finalScore,
         answers: JSON.stringify({}),
       },
     });
@@ -34,16 +37,35 @@ export async function POST(req) {
         return Response.json({ error: "Challenge not found" }, { status: 404 });
       }
 
+      if (challenge.status !== "active" || challenge.expiresAt < new Date()) {
+        return Response.json({ error: "Challenge has ended" }, { status: 400 });
+      }
+
+      // Only the challenger, invited users, or anyone on public challenges may submit
+      let invitedIds = [];
+      try {
+        invitedIds = JSON.parse(challenge.challengedUserIds || "[]").map(Number);
+      } catch {
+        invitedIds = [];
+      }
+      const canParticipate =
+        challenge.challengerId === userId ||
+        invitedIds.includes(userId) ||
+        challenge.leaderboardMode;
+      if (!canParticipate) {
+        return Response.json({ error: "Access denied" }, { status: 403 });
+      }
+
       // Check if user is already in participants
       const existingParticipant = challenge.participants.find((p) => p.userId === userId);
 
       if (existingParticipant) {
         // Update their result if they did better
-        if (score > existingParticipant.score) {
+        if (finalScore > (existingParticipant.score ?? -1)) {
           await prisma.quizChallengeParticipant.update({
             where: { id: existingParticipant.id },
             data: {
-              score: Number(score),
+              score: finalScore,
               timeSeconds: Number(timeSeconds) || 0,
               attemptedAt: new Date(),
             },
@@ -55,7 +77,7 @@ export async function POST(req) {
           data: {
             challengeId,
             userId,
-            score: Number(score),
+            score: finalScore,
             timeSeconds: Number(timeSeconds) || 0,
             attemptedAt: new Date(),
           },
@@ -81,7 +103,7 @@ export async function POST(req) {
 
       return Response.json({
         success: true,
-        score,
+        score: finalScore,
         userRank,
         totalParticipants,
         leaderboard: updatedChallenge.participants.map((p, idx) => ({
@@ -100,7 +122,7 @@ export async function POST(req) {
 
     return Response.json({
       success: true,
-      score,
+      score: finalScore,
       message: "Quiz completed!",
     });
   } catch (error) {

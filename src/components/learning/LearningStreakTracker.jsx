@@ -42,7 +42,14 @@ export default function LearningStreakTracker() {
     )
   }
 
-  if (!streaks) {
+  const hasAnyStreak =
+    streaks &&
+    ((streaks.reviewStreak?.current || 0) > 0 ||
+      (streaks.reviewStreak?.best || 0) > 0 ||
+      (streaks.watchStreak?.current || 0) > 0 ||
+      (streaks.watchStreak?.best || 0) > 0)
+
+  if (!hasAnyStreak) {
     return (
       <div className="bg-zinc-800/60 rounded-xl border border-zinc-700 p-8">
         <div className="flex items-center gap-2 mb-4">

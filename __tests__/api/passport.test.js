@@ -40,10 +40,10 @@ describe('GET /api/user/passport', () => {
     getCurrentUser.mockResolvedValueOnce({ userId: 1, email: 'user@example.com' })
 
     prisma.conceptMastery.findMany.mockResolvedValueOnce([
-      { id: 1, concept: 'React', masteryScore: 85, reviewCount: 10 },
-      { id: 2, concept: 'JavaScript', masteryScore: 75, reviewCount: 8 },
-      { id: 3, concept: 'Node.js', masteryScore: 65, reviewCount: 6 },
-      { id: 4, concept: 'CSS', masteryScore: 55, reviewCount: 4 },
+      { id: 1, concept: 'React', masteryScore: 85, reviewCount: 10 }, // Mastered (>= 80)
+      { id: 2, concept: 'JavaScript', masteryScore: 65, reviewCount: 8 }, // Proficient (60-79)
+      { id: 3, concept: 'Node.js', masteryScore: 45, reviewCount: 6 }, // Developing (40-59)
+      { id: 4, concept: 'CSS', masteryScore: 25, reviewCount: 4 }, // Beginning (< 40)
     ])
 
     prisma.reviewSession.findMany.mockResolvedValueOnce([

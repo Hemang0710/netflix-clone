@@ -33,13 +33,18 @@ LearnAI is a next-generation learning platform that leverages artificial intelli
 - 🏆 **Gamification** - Badges, certificates, and leaderboards
 - 📚 **Rich Content** - Videos with auto-chapters, flashcards, quizzes
 - 🔐 **Secure** - Email verification, account lockout, JWT auth
-- 🚀 **Modern Stack** - Next.js 16, React 19, PostgreSQL, Prisma
+- 🚀 **Modern Stack** - Next.js 16, React 18, PostgreSQL, Prisma
 
 ---
 
 ## ✨ Features
 
 ### 👨‍🎓 For Learners
+- **Universal Learning Inbox** - Share any article, YouTube video, PDF, or note into the app (PWA share sheet or paste); AI extracts the key concepts straight into your spaced-repetition queue
+- **Forgetting Forecast** - Per-concept memory projection ("you'll forget Recursion by Friday") with a one-click 5-minute save review and daily digest
+- **Teach-Back (Feynman) Mode** - Explain a concept in your own words to an AI "student" (a 12-year-old, a beginner, or a skeptical expert); get graded on accuracy, completeness, and simplicity with knowledge gaps and jargon called out, then lock the score into your review schedule
+- **Study Autopilot** - LearnAI schedules review slots from your due cards inside your preferred study window (days, hours, slot length) and serves them as a secret iCal feed — subscribe once from Google/Apple/Outlook Calendar and never plan a review again
+- **Obsidian & Notion Export + Webhooks** - Download your whole learning graph as an Obsidian vault (Markdown + wikilinks) or a Notion import (Markdown + CSV database), or register HMAC-signed webhooks (`review.completed`, `concept.mastered`, …) to pipe events into Zapier, n8n, or your own scripts
 - **Personalized Learning Paths** - AI-recommended courses based on goals
 - **Interactive Flashcards** - Spaced repetition with adaptive difficulty
 - **Video Learning** - Auto-generated chapters, timestamps, micro-lessons
@@ -59,6 +64,7 @@ LearnAI is a next-generation learning platform that leverages artificial intelli
 - **Monetization** - Subscriptions, credits system, premium content
 
 ### 🔧 Technical Features
+- **Open Integrations** - Secret-URL iCal feed for calendars; one-click Obsidian vault / Notion (Markdown + CSV) / JSON exports; outbound webhooks signed with `X-LearnAI-Signature: t=<unix>,v1=<hex>` where `v1 = HMAC-SHA256(secret, "<t>.<body>")` — endpoints auto-disable after 8 consecutive failures
 - **Security** - Account lockout (5 attempts), email verification, secure password reset
 - **Error Monitoring** - Sentry integration for production issue tracking
 - **CI/CD Pipeline** - GitHub Actions with automated testing and Vercel deployment
@@ -73,7 +79,7 @@ LearnAI is a next-generation learning platform that leverages artificial intelli
 
 ### Frontend
 ```
-Next.js 16.1 + React 19.2 + Tailwind CSS 4.2
+Next.js 16.1 + React 18.3 + Tailwind CSS 4.2
 Sonner (Toasts) | Recharts (Analytics) | Motion (Animations)
 ```
 
@@ -126,21 +132,13 @@ npm install --legacy-peer-deps
 
 ### 2. Environment Setup
 ```bash
-# Copy example env
-cp .env.example .env.local
-
-# Required
-DATABASE_URL=postgresql://user:password@localhost:5432/stream_ai
-JWT_SECRET=your_secret_key_here
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Optional: AI Services
-OPENAI_API_KEY=your_key
-ANTHROPIC_API_KEY=your_key
-
-# Optional: Monitoring  
-NEXT_PUBLIC_SENTRY_DSN=your_dsn
+# Copy example env and fill in your values
+cp .env.example .env
 ```
+Only `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, and `NEXT_PUBLIC_APP_URL` are
+required. Every optional integration (Stripe, S3, Upstash, Hedera, Sentry,
+AI providers) disables itself gracefully when unset — see the comments in
+[.env.example](.env.example).
 
 ### 3. Database
 ```bash
@@ -271,17 +269,14 @@ See `prisma/schema.prisma` for full schema.
 
 ## 🤝 Contributing
 
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the full
+guide (dev setup, code conventions, testing, and how to report security issues).
+
 1. Fork repository
 2. Create feature branch: `git checkout -b feature/name`
 3. Commit: `git commit -m 'Add feature'`
 4. Push: `git push origin feature/name`
 5. Open Pull Request
-
-**Guidelines**:
-- Follow code style
-- Write tests
-- Update docs
-- Pass CI/CD
 
 ---
 

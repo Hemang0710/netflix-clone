@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Users } from 'lucide-react'
+import BuddyMatchPanel from './BuddyMatchPanel'
 
 export default function ActiveLearnersBar({ contentId }) {
   const [activeCount, setActiveCount] = useState(0)

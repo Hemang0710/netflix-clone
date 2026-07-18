@@ -1,5 +1,6 @@
-"use server"
-
+// Server-side auth helpers for route handlers and server components.
+// Note: deliberately NOT marked "use server" — that would expose these
+// as client-invokable Server Actions.
 import { jwtVerify } from "jose";
 import { cookies } from "next/headers";
 

@@ -7,12 +7,13 @@ import VisualExplainer from "@/components/ai/visual/VisualExplainer"
 
 // Mock the useExplanationFeedback hook
 jest.mock("@/hooks/useExplanationFeedback", () => ({
-  useExplanationFeedback: () => ({
+  // jest.fn so individual tests can override with mockReturnValue
+  useExplanationFeedback: jest.fn(() => ({
     submitFeedback: jest.fn().mockResolvedValue({ id: 1 }),
     startTracking: jest.fn(),
     getUserPreferredStyle: jest.fn(),
     isSubmitting: false,
-  }),
+  })),
 }))
 
 describe("Explainer Feedback Components", () => {

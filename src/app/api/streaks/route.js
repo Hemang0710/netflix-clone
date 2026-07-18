@@ -32,10 +32,15 @@ function calculateStreak(sessions) {
     return { current: 0, best: 0 }
   }
 
-  // Calculate current streak
+  // Calculate current streak. The streak is still "alive" if the most recent
+  // activity was yesterday, but after that each day must be consecutive —
+  // otherwise a one-day gap would incorrectly extend the streak.
   let currentDate = new Date(today)
+  if (uniqueDays[0].getTime() === currentDate.getTime() - 86400000) {
+    currentDate.setTime(currentDate.getTime() - 86400000)
+  }
   for (let day of uniqueDays) {
-    if (day.getTime() === currentDate.getTime() || day.getTime() === currentDate.getTime() - 86400000) {
+    if (day.getTime() === currentDate.getTime()) {
       currentStreak++
       currentDate.setTime(currentDate.getTime() - 86400000)
     } else {

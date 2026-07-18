@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import DailyReviewSession from '@/components/DailyReviewSession'
+import DailyReviewSession from '@/components/learning/DailyReviewSession'
 
 // Mock fetch
 global.fetch = jest.fn()

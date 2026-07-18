@@ -15,7 +15,7 @@ export async function GET(req) {
 
     const activities = await prisma.activeLearner.findMany({
       where: {
-        updatedAt: { gte: oneHourAgo },
+        lastSeen: { gte: oneHourAgo },
         ...(contentId && { contentId: parseInt(contentId) }),
       },
       include: {
@@ -23,15 +23,15 @@ export async function GET(req) {
           select: { id: true, profile: { select: { name: true, avatarUrl: true } } },
         },
       },
-      orderBy: { updatedAt: "desc" },
+      orderBy: { lastSeen: "desc" },
       take: limit,
     });
 
-    // Get study group activity
+    // Get study group activity (skip AI-generated messages)
     const groupActivity = await prisma.studyGroupMessage.findMany({
-      where: { createdAt: { gte: oneHourAgo } },
+      where: { createdAt: { gte: oneHourAgo }, isAI: false, isFlagged: false },
       include: {
-        author: {
+        user: {
           select: { id: true, profile: { select: { name: true, avatarUrl: true } } },
         },
         group: { select: { id: true, name: true, contentId: true } },
@@ -57,7 +57,7 @@ export async function GET(req) {
     const combined = [
       ...activities.map((a) => ({
         type: "learning",
-        timestamp: a.updatedAt,
+        timestamp: a.lastSeen,
         user: a.user,
         contentId: a.contentId,
         action: `Studying content`,
@@ -65,7 +65,7 @@ export async function GET(req) {
       ...groupActivity.map((m) => ({
         type: "group_message",
         timestamp: m.createdAt,
-        user: m.author,
+        user: m.user,
         groupId: m.groupId,
         groupName: m.group.name,
         action: `Posted in ${m.group.name}`,

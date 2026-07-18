@@ -38,7 +38,7 @@ export async function GET(request) {
   const user = await getCurrentUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const contentId = parseInt(request.nextUrl.searchParams.get('contentId'))
+  const contentId = parseInt(new URL(request.url).searchParams.get('contentId'))
   if (!contentId) return NextResponse.json({ error: 'Missing contentId' }, { status: 400 })
 
   const rooms = await prisma.studyGroup.findMany({

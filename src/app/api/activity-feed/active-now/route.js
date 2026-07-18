@@ -1,7 +1,11 @@
 import prisma from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 
 export async function GET(req) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return Response.json({ error: "Unauthorized" }, { status: 401 });
+
     const url = new URL(req.url);
     const contentId = url.searchParams.get("contentId");
 
@@ -10,7 +14,7 @@ export async function GET(req) {
 
     const activeCount = await prisma.activeLearner.count({
       where: {
-        updatedAt: { gte: fiveMinutesAgo },
+        lastSeen: { gte: fiveMinutesAgo },
         ...(contentId && { contentId: parseInt(contentId) }),
       },
     });

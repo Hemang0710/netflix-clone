@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import ComprehensionCheckpoint from '@/components/ComprehensionCheckpoint'
+import ComprehensionCheckpoint from '@/components/learning/ComprehensionCheckpoint'
 
 global.fetch = jest.fn()
 

@@ -68,6 +68,7 @@ export default function Navbar() {
     { href: "/browse",            label: "Discover" },
     { href: "/learn",             label: "My Learning" },
     { href: "/library",           label: "📚 Library" },
+    { href: "/inbox",             label: "📥 Inbox" },
     { href: "/learn/paths",       label: "Paths" },
     { href: "/partners",          label: "👥 Partners" },
     { href: "/leaderboard",       label: "🏆" },

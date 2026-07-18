@@ -2,6 +2,16 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 import { v4 as uuid } from "uuid";
 
+// challengedUserIds is stored as a JSON string (e.g. "[1,2,3]") in the DB
+function parseChallengedIds(raw) {
+  try {
+    const parsed = JSON.parse(raw || "[]");
+    return Array.isArray(parsed) ? parsed.map(Number) : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function POST(req) {
   try {
     const user = await getCurrentUser();
@@ -14,6 +24,10 @@ export async function POST(req) {
       return Response.json({ error: "Content ID required" }, { status: 400 });
     }
 
+    const invitedIds = Array.isArray(challengedUserIds)
+      ? challengedUserIds.map(Number).filter((id) => Number.isInteger(id) && id !== challengerId)
+      : [];
+
     // Create challenge
     const challenge = await prisma.$transaction(async (tx) => {
       const newChallenge = await tx.quizChallenge.create({
@@ -21,7 +35,7 @@ export async function POST(req) {
           id: uuid(),
           contentId: Number(contentId),
           challengerId,
-          challengedUserIds: challengedUserIds || [],
+          challengedUserIds: JSON.stringify(invitedIds),
           leaderboardMode: !!leaderboardMode,
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
           status: "active",
@@ -29,10 +43,10 @@ export async function POST(req) {
       });
 
       // Send notifications to challenged users
-      if (challengedUserIds && challengedUserIds.length > 0) {
+      if (invitedIds.length > 0) {
         await tx.notification.createMany({
-          data: challengedUserIds.map((userId) => ({
-            userId: Number(userId),
+          data: invitedIds.map((userId) => ({
+            userId,
             type: "quiz_challenge",
             title: "You've been challenged to a quiz!",
             message: `Complete the quiz faster and score higher than your friend!`,
@@ -46,9 +60,9 @@ export async function POST(req) {
     });
 
     return Response.json({
-      challenge,
+      challenge: { ...challenge, challengedUserIds: invitedIds },
       shareLink: `/quiz/${contentId}?challenge=${challenge.id}`,
-      inviteLink: `${process.env.NEXT_PUBLIC_BASE_URL}/join-challenge/${challenge.id}`,
+      inviteLink: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/join-challenge/${challenge.id}`,
     });
   } catch (error) {
     console.error("Challenge creation error:", error);
@@ -75,10 +89,8 @@ export async function GET(req) {
           participants: {
             include: {
               user: { select: { profile: { select: { name: true } } } },
-              score: true,
-              timeSeconds: true,
             },
-            orderBy: { score: "desc" },
+            orderBy: [{ score: "desc" }, { timeSeconds: "asc" }],
           },
         },
       });
@@ -87,10 +99,12 @@ export async function GET(req) {
         return Response.json({ error: "Challenge not found" }, { status: 404 });
       }
 
+      const invitedIds = parseChallengedIds(challenge.challengedUserIds);
+
       // Check if user is allowed to see it
       const canView =
         challenge.challengerId === userId ||
-        challenge.challengedUserIds.includes(userId) ||
+        invitedIds.includes(userId) ||
         challenge.leaderboardMode;
 
       if (!canView) {
@@ -101,7 +115,7 @@ export async function GET(req) {
       const userResult = challenge.participants.find((p) => p.userId === userId);
 
       return Response.json({
-        challenge,
+        challenge: { ...challenge, challengedUserIds: invitedIds },
         userResult,
         leaderboard: challenge.participants.map((p, idx) => ({
           rank: idx + 1,
@@ -112,13 +126,16 @@ export async function GET(req) {
       });
     }
 
-    // Get all active challenges for user
-    const challenges = await prisma.quizChallenge.findMany({
+    // Get all active challenges for user:
+    // ones they created, public leaderboard ones, or ones they were invited to.
+    // challengedUserIds is a JSON string, so `contains` is a coarse pre-filter
+    // and the exact membership check happens after parsing.
+    const candidates = await prisma.quizChallenge.findMany({
       where: {
         OR: [
           { challengerId: userId },
-          { challengedUserIds: { has: userId } },
           { leaderboardMode: true },
+          { challengedUserIds: { contains: String(userId) } },
         ],
         status: "active",
         expiresAt: { gt: new Date() },
@@ -128,8 +145,18 @@ export async function GET(req) {
         _count: { select: { participants: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 10,
+      take: 30,
     });
+
+    const challenges = candidates
+      .filter(
+        (c) =>
+          c.challengerId === userId ||
+          c.leaderboardMode ||
+          parseChallengedIds(c.challengedUserIds).includes(userId)
+      )
+      .slice(0, 10)
+      .map((c) => ({ ...c, challengedUserIds: parseChallengedIds(c.challengedUserIds) }));
 
     return Response.json({ challenges });
   } catch (error) {

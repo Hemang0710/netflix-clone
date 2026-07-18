@@ -192,19 +192,21 @@ describe('GET /api/concepts/relationships', () => {
     getCurrentUser.mockResolvedValueOnce({ userId: 1, email: 'user@example.com' })
 
     prisma.conceptMastery.findMany.mockResolvedValueOnce([
-      {
-        id: 1,
-        concept: 'React',
-        masteryScore: 50,
-        reviewCount: 5,
-        contentId: 1,
-        content: { id: 1 },
-      },
+      // Mock returns data pre-sorted by masteryScore desc, matching the
+      // route's Prisma orderBy (sorting happens in the database)
       {
         id: 2,
         concept: 'JavaScript',
         masteryScore: 90,
         reviewCount: 10,
+        contentId: 1,
+        content: { id: 1 },
+      },
+      {
+        id: 1,
+        concept: 'React',
+        masteryScore: 50,
+        reviewCount: 5,
         contentId: 1,
         content: { id: 1 },
       },

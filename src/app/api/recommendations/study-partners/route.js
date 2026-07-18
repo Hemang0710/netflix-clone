@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+import { parseAIJson } from "@/lib/aiJson";
 import { Anthropic } from "@anthropic-ai/sdk";
 
 const client = new Anthropic();
@@ -88,15 +89,32 @@ For each match, explain:
 Format as JSON array with fields: name, reason, suggestedActivity, complementaryStrength
 `;
 
-    const response = await client.messages.create({
-      model: "claude-opus-4-8",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: recommendationPrompt }],
-    });
+    // AI matching is best-effort: fall back to a simple list built from the
+    // DB matches if the model is unavailable or returns unparseable output.
+    let recommendations = potentialPartners.slice(0, 3).map((p) => ({
+      name: p.profile?.name || "Learner",
+      reason: "You've studied the same content",
+      suggestedActivity: "flashcard quiz",
+      complementaryStrength: p.conceptMasteries[0]?.concept || null,
+    }));
 
-    const recommendations = JSON.parse(
-      response.content[0].type === "text" ? response.content[0].text : "[]"
-    );
+    try {
+      const response = await client.messages.create({
+        model: "claude-opus-4-8",
+        max_tokens: 1024,
+        messages: [{ role: "user", content: recommendationPrompt }],
+      });
+
+      const aiRecommendations = parseAIJson(
+        response.content[0].type === "text" ? response.content[0].text : "",
+        null
+      );
+      if (Array.isArray(aiRecommendations) && aiRecommendations.length > 0) {
+        recommendations = aiRecommendations;
+      }
+    } catch (aiError) {
+      console.error("AI partner matching fallback:", aiError.message);
+    }
 
     return Response.json({
       recommendations,

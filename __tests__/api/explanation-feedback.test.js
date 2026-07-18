@@ -3,13 +3,29 @@ import { GET as preferencesHandler } from "@/app/api/explanation-feedback/prefer
 import prisma from "@/lib/prisma"
 import * as auth from "@/lib/auth"
 
-// Mock dependencies
-jest.mock("@/lib/prisma")
-jest.mock("@/lib/auth")
+// Mock dependencies (explicit factories — bare automock doesn't substitute
+// aliased modules under next/jest's SWC transform)
+jest.mock("@/lib/prisma", () => ({
+  __esModule: true,
+  default: {
+    explanationFeedback: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      groupBy: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
+    },
+  },
+}))
+jest.mock("@/lib/auth", () => ({
+  getCurrentUser: jest.fn(),
+  verifyAuth: jest.fn(),
+}))
 
 describe("Explanation Feedback API", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
   })
 
   describe("POST /api/explanation-feedback/save", () => {

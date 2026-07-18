@@ -23,6 +23,22 @@
     }
   ],
   "categories": ["education"],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "files",
+          "accept": ["application/pdf", "text/plain", "text/markdown", ".pdf", ".txt", ".md"]
+        }
+      ]
+    }
+  },
   "screenshots": [
     {
       "src": "/screenshot-540.png",
@@ -50,6 +66,13 @@
       "short_name": "Plan",
       "description": "View your personalized study plan",
       "url": "/study-plans",
+      "icons": [{ "src": "/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Learning Inbox",
+      "short_name": "Inbox",
+      "description": "Everything you've captured to learn",
+      "url": "/inbox",
       "icons": [{ "src": "/icon-96.png", "sizes": "96x96" }]
     }
   ]

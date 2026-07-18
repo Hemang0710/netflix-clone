@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { applySM2, calcMasteryScore } from '@/lib/sm2'
+import { MASTERED_SCORE, dispatchWebhooks } from '@/lib/webhooks'
 
 export async function POST(request, { params }) {
   try {
@@ -56,6 +57,23 @@ export async function POST(request, { params }) {
         reviewCount: concept.reviewCount + 1,
       },
     })
+
+    await dispatchWebhooks(concept.userId, 'review.completed', {
+      conceptId: updated.id,
+      concept: updated.concept,
+      quality,
+      score: score ?? null,
+      masteryScore: updated.masteryScore,
+      repetitions: updated.repetitions,
+      nextDue: updated.dueDate,
+    })
+    if (updated.masteryScore >= MASTERED_SCORE && concept.masteryScore < MASTERED_SCORE) {
+      await dispatchWebhooks(concept.userId, 'concept.mastered', {
+        conceptId: updated.id,
+        concept: updated.concept,
+        masteryScore: updated.masteryScore,
+      })
+    }
 
     return NextResponse.json({ concept: updated })
   } catch (error) {

@@ -1,6 +1,10 @@
 import Navbar from "@/components/layout/Navbar"
 import prisma from "@/lib/prisma"
 
+// Leaderboard data must come from the DB at request time, not be baked in at
+// build time (static prerender would also fail builds without a reachable DB)
+export const dynamic = "force-dynamic"
+
 const MEDALS = ["🥇", "🥈", "🥉"]
 
 async function getLeaderboard() {

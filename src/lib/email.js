@@ -23,6 +23,30 @@ export async function sendVerificationEmail(email, token) {
   return true
 }
 
+export async function sendForgettingDigestEmail(email, digest) {
+  const reviewLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/learn#daily-review`
+
+  const emailContent = {
+    to: email,
+    subject: digest.subject,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1 style="color: #4f46e5;">Your memory is about to slip 🧠</h1>
+        <p>${digest.body}</p>
+        <p style="color: #666;">Fading concepts: <strong>${digest.conceptNames.join(', ')}</strong></p>
+        <a href="${reviewLink}" style="display: inline-block; background-color: #4f46e5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">
+          Start ${digest.minutes}-minute review
+        </a>
+        <p style="color: #999; font-size: 12px;">Reviewing right before you forget is when spaced repetition works best.</p>
+      </div>
+    `,
+  }
+
+  console.log('📧 Forgetting digest sent to:', email)
+  console.log('📧 Email content:', emailContent)
+  return true
+}
+
 export async function sendPasswordResetEmail(email, token) {
   const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/reset-password?token=${token}`
 

@@ -59,12 +59,19 @@ model User {
   highlights               Highlight[]
   createdQuizChallenges    QuizChallenge[]          @relation("CreatedChallenges")
   quizChallengeParticipants QuizChallengeParticipant[]
+  achievements             Achievement[]
+  inboxItems               InboxItem[]
+  teachBackSessions        TeachBackSession[]
+  projectBriefs            ProjectBrief[]
+  autopilotSettings        AutopilotSettings?
+  webhooks                 Webhook[]
 }
 
 model ConceptMastery {
   id           Int       @id @default(autoincrement())
   userId       Int
   contentId    Int?
+  inboxItemId  Int?
   concept      String
   source       String    @default("chapter")
   interval     Int       @default(1)
@@ -79,8 +86,11 @@ model ConceptMastery {
   updatedAt    DateTime  @updatedAt
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   content      Content?  @relation(fields: [contentId], references: [id], onDelete: SetNull)
+  inboxItem    InboxItem? @relation(fields: [inboxItemId], references: [id], onDelete: SetNull)
+  teachBackSessions TeachBackSession[]
 
   @@unique([userId, contentId, concept])
+  @@index([userId, dueDate])
 }
 
 model ReviewSession {
@@ -814,4 +824,157 @@ model QuizChallengeParticipant {
   @@unique([challengeId, userId])
   @@index([userId])
   @@index([score])
+}
+
+// Platform-wide achievements (tier badges like "Week Warrior") earned from
+// engagement stats — separate from content-specific Badge/BadgeIssuance.
+model Achievement {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key       String   // e.g. "week_warrior", "quiz_master"
+  name      String
+  icon      String?
+  earnedAt  DateTime @default(now())
+
+  @@unique([userId, key])
+  @@index([userId])
+}
+
+// Universal learning inbox: anything shared/pasted into the app (article URL,
+// YouTube link, PDF, raw text) gets transcribed/extracted, concept-mined by AI,
+// and feeds the same SM-2 review queue as native content.
+model InboxItem {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  sourceType  String    @default("article") // article | youtube | pdf | text
+  url         String?
+  title       String?
+  siteName    String?
+  rawText     String?   // extracted text/transcript (truncated to a sane cap)
+  summary     String?   // AI summary
+  concepts    String?   // JSON [{ name, definition, conceptMasteryId, isNew }]
+  status      String    @default("pending") // pending | processing | ready | failed
+  error       String?
+
+  createdAt   DateTime  @default(now())
+  processedAt DateTime?
+
+  conceptMasteries ConceptMastery[]
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
+}
+
+model TeachBackSession {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  conceptMasteryId Int?
+  concept          String
+  audience         String   @default("beginner") // child | beginner | expert
+  explanation      String
+  score            Int      // 0-100 overall Feynman score
+  accuracy         Int
+  completeness     Int
+  simplicity       Int
+  feedback         String?
+  gaps             String?  // JSON array of knowledge-gap strings
+  jargon           String?  // JSON array of unexplained jargon terms
+  followUp         String?  // AI's probing follow-up question
+  createdAt        DateTime @default(now())
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conceptCard ConceptMastery? @relation(fields: [conceptMasteryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+model ProjectBrief {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  clusterKey     String    // which mastered cluster this bridges: "content:{id}" | "standalone"
+  clusterLabel   String    // human name of the cluster (course title or "Self-directed learning")
+  title          String
+  pitch          String    // real-world framing: why this project matters
+  deliverable    String    // the concrete artifact the learner walks away with
+  difficulty     String    @default("starter") // starter | intermediate | ambitious
+  estimatedHours Int?
+  concepts       String    // JSON [{ id, concept }] — mastered concepts the project exercises
+  status         String    @default("active") // active | completed | abandoned
+  createdAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkpoints ProjectCheckpoint[]
+
+  @@index([userId, status])
+}
+
+model ProjectCheckpoint {
+  id         Int       @id @default(autoincrement())
+  briefId    Int
+  order      Int
+  title      String
+  task       String    // what to build/do for this step
+  acceptance String    // what "done" looks like — the AI reviews submissions against this
+  hint       String?
+  status     String    @default("pending") // pending | passed
+  submission String?   // learner's latest write-up of what they built
+  feedback   String?   // AI feedback on the latest attempt
+  score      Int?      // 0-100 from the latest AI check
+  attempts   Int       @default(0)
+  passedAt   DateTime?
+
+  brief ProjectBrief @relation(fields: [briefId], references: [id], onDelete: Cascade)
+
+  @@index([briefId, order])
+}
+
+// Study autopilot: turns the SM-2 due queue into concrete calendar review
+// slots inside the user's preferred study window, served as a secret iCal
+// feed URL any calendar app (Google/Apple/Outlook) can subscribe to.
+model AutopilotSettings {
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  enabled        Boolean @default(true)
+  studyDays      String  @default("[1,2,3,4,5]") // JSON array of weekdays, 0=Sun … 6=Sat
+  startHour      Int     @default(18) // daily study window start, local wall-clock hour
+  endHour        Int     @default(21) // window end (exclusive)
+  slotMinutes    Int     @default(25)
+  maxSlotsPerDay Int     @default(2)
+  timezone       String  @default("UTC") // IANA name, e.g. "Asia/Kolkata"
+
+  calendarToken  String  @unique // secret path segment of the iCal feed URL
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Outbound webhooks: POST signed JSON to user-configured URLs on learning
+// events (review.completed, concept.mastered, …) so self-hosters can wire
+// LearnAI into Obsidian, Notion, Zapier, or anything else.
+model Webhook {
+  id       Int     @id @default(autoincrement())
+  userId   Int
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  url      String
+  secret   String // HMAC-SHA256 signing secret, shown once at creation
+  events   String  @default("[]") // JSON array of event names; empty = all events
+  label    String?
+  active   Boolean @default(true)
+
+  failCount       Int       @default(0) // consecutive failures; auto-disabled at threshold
+  lastStatus      Int?
+  lastError       String?
+  lastTriggeredAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, active])
 }

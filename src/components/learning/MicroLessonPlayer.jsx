@@ -16,16 +16,10 @@ export default function MicroLessonPlayer({
 
   const lesson = microLessons?.[currentLesson];
 
-  if (!lesson) {
-    return (
-      <div className="text-center py-12 text-slate-400">
-        No micro-lessons available yet
-      </div>
-    );
-  }
-
   // Load progress for current lesson
+  // (hooks must run unconditionally — the "no lessons" early return is below)
   useEffect(() => {
+    if (!lesson) return;
     async function loadProgress() {
       try {
         const res = await fetch(
@@ -41,7 +35,7 @@ export default function MicroLessonPlayer({
     }
 
     loadProgress();
-  }, [contentId, lesson.id]);
+  }, [contentId, lesson]);
 
   // Auto-seek to lesson timestamps
   useEffect(() => {
@@ -49,6 +43,14 @@ export default function MicroLessonPlayer({
       videoRef.current.currentTime = lesson.startTimestamp;
     }
   }, [currentLesson, lesson]);
+
+  if (!lesson) {
+    return (
+      <div className="text-center py-12 text-slate-400">
+        No micro-lessons available yet
+      </div>
+    );
+  }
 
   // Auto-advance when lesson ends
   const handleTimeUpdate = () => {

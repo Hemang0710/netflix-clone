@@ -54,7 +54,9 @@ export async function GET(req) {
     let bestScore = -1
 
     Object.entries(typeScores).forEach(([type, data]) => {
-      if (data.avgScore > bestScore) {
+      // Only types with actual feedback count — otherwise a 0 average
+      // would beat the initial -1 and "win" with no data
+      if (data.count > 0 && data.avgScore > bestScore) {
         bestScore = data.avgScore
         bestType = type
       }

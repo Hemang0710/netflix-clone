@@ -61,6 +61,7 @@ export async function GET(request) {
                     email:googleUser.email,
                     password: null, // OAuth users have no password
                     role: "viewer",
+                    emailVerified: true, // Google already verified this email
                 },
             })
 
@@ -71,6 +72,13 @@ export async function GET(request) {
                     name: googleUser.name || googleUser.email.split("@")[0],
                     avatarUrl: googleUser.picture || null,
                 },
+            })
+        } else if(!user.emailVerified){
+            // Existing unverified account signing in via Google — Google has
+            // confirmed ownership of this email, so mark it verified
+            await prisma.user.update({
+                where: {id: user.id},
+                data: {emailVerified: true, emailVerificationToken: null},
             })
         }
 

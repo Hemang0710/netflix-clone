@@ -1,17 +1,22 @@
-import {email, object, success, z}from "zod"
-import { describe } from "zod/v4/core"
+import { z } from "zod"
 
 //Auth schemas
+
+export const passwordSchema = z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(100, "Password too long")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[A-Z]/, "Password must contain at least one capital letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character")
 
 export const registerSchema = z.object({
     email: z
         .string()
         .min(1, "Email is required")
         .email("Invalid email format"),
-    password: z
-        .string()
-        .min(6, "Password must be at least 6 characters")
-        .max(100,"Password too long"),
+    password: passwordSchema,
 })
 
 export const loginSchema = z.object({
@@ -49,7 +54,7 @@ export function validateBody(schema,body){
     if(!result.success){
         const errors = result.error.flatten().fieldErrors
         // Get the first error message for each field
-        const firstErrors = object.entries(errors).reduce((acc,[field,msgs]) => {
+        const firstErrors = Object.entries(errors).reduce((acc,[field,msgs]) => {
             acc[field] = msgs[0]
             return acc
         },{})

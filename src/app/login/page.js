@@ -14,6 +14,8 @@ function LoginForm() {
   const [formData, setFormData] = useState({ email: "", password: "" })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [unverifiedUserId, setUnverifiedUserId] = useState(null)
+  const [resendStatus, setResendStatus] = useState("")
 
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -23,6 +25,8 @@ function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setUnverifiedUserId(null)
+    setResendStatus("")
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
@@ -32,6 +36,9 @@ function LoginForm() {
       const data = await res.json()
       if (!res.ok) {
         setError(data.message)
+        if (data.requiresEmailVerification) {
+          setUnverifiedUserId(data.userId)
+        }
         return
       }
       router.push("/browse")
@@ -40,6 +47,22 @@ function LoginForm() {
       setError("Something went wrong. Try again.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleResendVerification() {
+    setResendStatus("sending")
+    try {
+      const res = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: unverifiedUserId }),
+      })
+      const data = await res.json()
+      setResendStatus(res.ok ? "sent" : "failed")
+      if (!res.ok) setError(data.message)
+    } catch {
+      setResendStatus("failed")
     }
   }
 
@@ -96,6 +119,27 @@ function LoginForm() {
             <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
               {error}
             </p>
+          )}
+
+          {unverifiedUserId && (
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl px-4 py-3 text-sm">
+              {resendStatus === "sent" ? (
+                <p className="text-emerald-400">
+                  Verification email sent. Check your inbox, then sign in.
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendStatus === "sending"}
+                  className="text-amber-400 hover:text-amber-300 font-semibold disabled:opacity-50 transition-colors"
+                >
+                  {resendStatus === "sending"
+                    ? "Sending..."
+                    : "Didn't get the email? Resend verification link"}
+                </button>
+              )}
+            </div>
           )}
 
           <button

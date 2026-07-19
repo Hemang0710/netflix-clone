@@ -1,11 +1,17 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 
+const PASSWORD_RULES = [
+  { id: "length", label: "At least 8 characters", test: (p) => p.length >= 8 },
+  { id: "lower", label: "One lowercase letter (a-z)", test: (p) => /[a-z]/.test(p) },
+  { id: "upper", label: "One capital letter (A-Z)", test: (p) => /[A-Z]/.test(p) },
+  { id: "number", label: "One number (0-9)", test: (p) => /[0-9]/.test(p) },
+  { id: "special", label: "One special character (!@#$...)", test: (p) => /[^A-Za-z0-9]/.test(p) },
+]
+
 export default function RegisterForm({ prefillEmail }) {
-  const router = useRouter()
   const [formData, setFormData] = useState({
     email: prefillEmail || "",
     password: "",
@@ -13,6 +19,7 @@ export default function RegisterForm({ prefillEmail }) {
   })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [registered, setRegistered] = useState(false)
 
   useEffect(() => {
     if (prefillEmail) {
@@ -20,21 +27,33 @@ export default function RegisterForm({ prefillEmail }) {
     }
   }, [prefillEmail])
 
+  const passwordChecks = PASSWORD_RULES.map((rule) => ({
+    ...rule,
+    passed: rule.test(formData.password),
+  }))
+  const passwordValid = passwordChecks.every((c) => c.passed)
+  const passwordsMismatch =
+    formData.confirmPassword.length > 0 && formData.password !== formData.confirmPassword
+
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+    setError("")
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setLoading(true)
     setError("")
 
+    if (!passwordValid) {
+      setError("Password does not meet all the requirements below")
+      return
+    }
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match")
-      setLoading(false)
       return
     }
 
+    setLoading(true)
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
@@ -46,15 +65,46 @@ export default function RegisterForm({ prefillEmail }) {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.message)
+        const fieldError = data.errors && Object.values(data.errors)[0]
+        setError(fieldError || data.message || "Registration failed")
         return
       }
-      router.push("/login")
+      setRegistered(true)
     } catch {
       setError("Something went wrong. Try again.")
     } finally {
       setLoading(false)
     }
+  }
+
+  if (registered) {
+    return (
+      <div className="relative min-h-screen bg-[#050508] flex items-center justify-center px-4 overflow-hidden">
+        <div className="orb w-96 h-96 bg-violet-600 top-0 right-0 animate-float" />
+        <div className="orb w-80 h-80 bg-indigo-600 bottom-0 left-0 animate-float-delayed" />
+        <div className="relative z-10 glass-card rounded-2xl px-8 py-10 w-full max-w-md text-center">
+          <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 6l-10 7L2 6" /><rect x="2" y="4" width="20" height="16" rx="2" />
+            </svg>
+          </div>
+          <h1 className="text-white text-2xl font-black mb-2 tracking-tight">Verify your email</h1>
+          <p className="text-slate-400 text-sm mb-1">
+            We sent a verification link to{" "}
+            <span className="text-white font-semibold">{formData.email}</span>
+          </p>
+          <p className="text-slate-500 text-sm mb-8">
+            Click the link in the email to activate your account, then sign in.
+          </p>
+          <Link
+            href="/login"
+            className="inline-block w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition-all glow-indigo-sm text-sm"
+          >
+            Go to Sign In
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -95,12 +145,28 @@ export default function RegisterForm({ prefillEmail }) {
           <input
             type="password"
             name="password"
-            placeholder="Password (min. 6 characters)"
+            placeholder="Password"
             value={formData.password}
             onChange={handleChange}
             required
             className="bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
           />
+
+          {formData.password.length > 0 && !passwordValid && (
+            <ul className="bg-white/3 border border-white/8 rounded-xl px-4 py-3 flex flex-col gap-1.5">
+              {passwordChecks.map((check) => (
+                <li key={check.id} className="flex items-center gap-2 text-xs">
+                  <span className={check.passed ? "text-emerald-400" : "text-slate-600"}>
+                    {check.passed ? "✓" : "○"}
+                  </span>
+                  <span className={check.passed ? "text-emerald-400" : "text-slate-500"}>
+                    {check.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <input
             type="password"
             name="confirmPassword"
@@ -108,8 +174,17 @@ export default function RegisterForm({ prefillEmail }) {
             value={formData.confirmPassword}
             onChange={handleChange}
             required
-            className="bg-white/5 border border-white/10 text-white placeholder-slate-500 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+            aria-invalid={passwordsMismatch}
+            className={`bg-white/5 border text-white placeholder-slate-500 rounded-xl px-4 py-3.5 text-sm focus:outline-none transition-all ${
+              passwordsMismatch
+                ? "border-red-500/50 focus:border-red-500/70"
+                : "border-white/10 focus:border-indigo-500/50"
+            }`}
           />
+
+          {passwordsMismatch && (
+            <p className="text-red-400 text-xs px-1 -mt-1.5">Passwords do not match</p>
+          )}
 
           {error && (
             <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">

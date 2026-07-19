@@ -1,3 +1,31 @@
+// Delivers via Resend when RESEND_API_KEY is set; otherwise logs to the
+// server console so the flow is still testable in local dev.
+async function deliverEmail({ to, subject, html }) {
+  if (process.env.RESEND_API_KEY) {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: process.env.EMAIL_FROM || 'LearnAI <onboarding@resend.dev>',
+        to,
+        subject,
+        html,
+      }),
+    })
+    if (!res.ok) {
+      console.error('Email delivery failed:', res.status, await res.text())
+      return false
+    }
+    return true
+  }
+
+  console.log(`📧 [dev — no RESEND_API_KEY set] Email to ${to}: ${subject}`)
+  return true
+}
+
 export async function sendVerificationEmail(email, token) {
   const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/verify?token=${token}`
 
@@ -17,10 +45,8 @@ export async function sendVerificationEmail(email, token) {
     `,
   }
 
-  console.log('📧 Email verification link sent to:', email)
-  console.log('📧 Verification link:', verificationLink)
-  console.log('📧 Email content:', emailContent)
-  return true
+  console.log('📧 Verification link for', email + ':', verificationLink)
+  return deliverEmail(emailContent)
 }
 
 export async function sendForgettingDigestEmail(email, digest) {
@@ -42,9 +68,7 @@ export async function sendForgettingDigestEmail(email, digest) {
     `,
   }
 
-  console.log('📧 Forgetting digest sent to:', email)
-  console.log('📧 Email content:', emailContent)
-  return true
+  return deliverEmail(emailContent)
 }
 
 export async function sendPasswordResetEmail(email, token) {
@@ -66,8 +90,6 @@ export async function sendPasswordResetEmail(email, token) {
     `,
   }
 
-  console.log('📧 Password reset link sent to:', email)
-  console.log('📧 Reset link:', resetLink)
-  console.log('📧 Email content:', emailContent)
-  return true
+  console.log('📧 Password reset link for', email + ':', resetLink)
+  return deliverEmail(emailContent)
 }

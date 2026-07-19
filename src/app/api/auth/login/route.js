@@ -71,6 +71,20 @@ export async function POST (request){
         )
     }
 
+    // Block sign-in until the email is verified (checked only after the
+    // password matched, so this doesn't reveal whether an email is registered)
+    if(!user.emailVerified){
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Please verify your email before signing in. Check your inbox for the verification link.",
+                requiresEmailVerification: true,
+                userId: user.id,
+            },
+            {status: 403}
+        )
+    }
+
     // Clear failed login attempts on successful login
     await clearFailedLogins(user.id)
 
